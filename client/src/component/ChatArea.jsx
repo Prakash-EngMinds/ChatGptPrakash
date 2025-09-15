@@ -11,7 +11,8 @@ import {
   Volume2,
   VolumeX,
   Edit3,
-  X // Add X for cancel icon
+  X,
+  ArrowDown
 } from "lucide-react";
 import gptIcon from "../assets/gpt-clone-icon.png";
 import MarkdownMessage from "./MarkdownMessage";
@@ -27,7 +28,7 @@ export default function ChatArea({
   onSendMessage,
   currentUser,
   isLoading = false,
-  onCancelStream // Add new prop
+  onCancelStream
 }) {
   const [copiedStates, setCopiedStates] = useState({});
   const [likedStates, setLikedStates] = useState({});
@@ -35,9 +36,11 @@ export default function ChatArea({
   const [speakingStates, setSpeakingStates] = useState({});
   const [editingMsgId, setEditingMsgId] = useState(null);
   const [editText, setEditText] = useState("");
+  const [showDownArrow, setShowDownArrow] = useState(false);
   const synthRef = useRef(window.speechSynthesis);
+  const messagesEndRef = useRef(null);
+  const scrollContainerRef = useRef(null);
 
-  // Clean text
   const stripMarkdown = (text) => {
     return text
       .replace(/(\*|_|~|`|#|>|-|\+|\[|\])/g, "")
@@ -45,7 +48,6 @@ export default function ChatArea({
       .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1");
   };
 
-  // Copy to clipboard
   const copyToClipboard = async (text, msgId) => {
     try {
       const cleanText = stripMarkdown(text);
@@ -60,7 +62,6 @@ export default function ChatArea({
     }
   };
 
-  // Like / Dislike
   const toggleLike = (msgId) => {
     setLikedStates((prev) => ({ ...prev, [msgId]: !prev[msgId] }));
     if (dislikedStates[msgId]) {
@@ -75,7 +76,6 @@ export default function ChatArea({
     }
   };
 
-  // Share
   const handleShare = (msgText) => {
     const shareData = { title: "ChatClone Message", text: msgText };
     if (navigator.share) {
@@ -87,7 +87,6 @@ export default function ChatArea({
     }
   };
 
-  // Read aloud
   const handleReadAloud = (msgId, msgText) => {
     if (speakingStates[msgId]) {
       synthRef.current.cancel();
@@ -105,7 +104,6 @@ export default function ChatArea({
     setSpeakingStates((prev) => ({ ...prev, [msgId]: true }));
   };
 
-  // Cleanup
   useEffect(() => {
     return () => synthRef.current.cancel();
   }, []);
@@ -118,13 +116,36 @@ export default function ChatArea({
     }
   };
 
-  // Save edited message
   const handleSaveEdit = (msgId) => {
     if (editText.trim()) {
-      onSendMessage(editText); // re-trigger response
+      onSendMessage(editText);
     }
     setEditingMsgId(null);
     setEditText("");
+  };
+
+  // 🔽 Detect scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollContainerRef.current) return;
+      const { scrollHeight, scrollTop, clientHeight } = scrollContainerRef.current;
+      const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+      setShowDownArrow(distanceFromBottom > 100);
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+      handleScroll();
+    }
+
+    return () => {
+      if (container) container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -133,7 +154,8 @@ export default function ChatArea({
       style={{
         marginLeft: sidebarCollapsed ? "60px" : "280px",
         transition: "margin-left 0.3s ease-in-out",
-        width: "100%"
+        width: "100%",
+        position: "relative"
       }}
     >
       {/* Header */}
@@ -166,6 +188,7 @@ export default function ChatArea({
 
       {/* Messages */}
       <div
+        ref={scrollContainerRef}
         className="flex-grow-1 overflow-auto p-4"
         style={{ backgroundColor: "transparent" }}
       >
@@ -206,7 +229,6 @@ export default function ChatArea({
                       : undefined
                 }}
               >
-                {/* Message content */}
                 <div className="fw-medium">
                   {editingMsgId === msgId ? (
                     <div className="d-flex gap-2">
@@ -241,7 +263,6 @@ export default function ChatArea({
                   {msg.isStreaming && <span className="typing-cursor">|</span>}
                 </div>
 
-                {/* Timestamp */}
                 <div
                   className={`small mt-1 ${
                     msg.role === "user"
@@ -258,7 +279,6 @@ export default function ChatArea({
                   {msg.isStreaming ? " • Typing..." : ""}
                 </div>
 
-                {/* Action buttons */}
                 {isAssistant && !msg.isStreaming && (
                   <div className="d-flex gap-2 mt-2 flex-wrap">
                     <button
@@ -322,7 +342,6 @@ export default function ChatArea({
                   </div>
                 )}
 
-                {/* Edit button for user messages */}
                 {msg.role === "user" && editingMsgId !== msgId && (
                   <div className="d-flex mt-2">
                     <button
@@ -341,7 +360,6 @@ export default function ChatArea({
                   </div>
                 )}
 
-                {/* Suggested follow-up */}
                 {isAssistant && suggested.length > 0 && (
                   <div className="d-flex gap-2 mt-2 flex-wrap">
                     {suggested.map((s, idx) => (
@@ -359,16 +377,43 @@ export default function ChatArea({
             );
           })
         )}
+        <div ref={messagesEndRef} />
       </div>
+
+      {/* 🔽 Down Arrow */}
+      {showDownArrow && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: "70px",
+            left: sidebarCollapsed ? "calc(60px + (100% - 60px) / 2)" : "calc(280px + (100% - 280px) / 2)",
+            transform: "translateX(-50%)",
+            zIndex: 1000
+          }}
+        >
+          <button
+            onClick={scrollToBottom}
+            className={`btn rounded-circle shadow ${
+              darkMode ? "btn-dark text-white" : "btn-light text-dark"
+            }`}
+            style={{
+              width: "40px",
+              height: "40px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+          >
+            <ArrowDown size={20} />
+          </button>
+        </div>
+      )}
 
       {/* Input */}
       <div
-        className={`p-3 border-top ${
-          darkMode ? "bg-dark border-dark" : "bg-white"
-        }`}
+        className={`p-3 border-top ${darkMode ? "bg-dark border-dark" : "bg-white"}`}
       >
         <div className="d-flex gap-2 align-items-center">
-          {/* Plus icon */}
           <label
             htmlFor="file-upload"
             className={`btn rounded-circle d-flex align-items-center justify-content-center ${
@@ -397,7 +442,6 @@ export default function ChatArea({
             }}
           />
 
-          {/* Message input */}
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -425,8 +469,7 @@ export default function ChatArea({
             <Mic size={18} />
           </button>
 
-          {/* Send button */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             {isLoading ? (
               <>
                 <div
@@ -438,7 +481,11 @@ export default function ChatArea({
                 <button
                   onClick={onCancelStream}
                   className="btn btn-sm btn-danger"
-                  style={{ borderRadius: "50%", padding: "3px", marginLeft: "2px" }}
+                  style={{
+                    borderRadius: "50%",
+                    padding: "3px",
+                    marginLeft: "2px"
+                  }}
                   title="Cancel"
                 >
                   <X size={16} />

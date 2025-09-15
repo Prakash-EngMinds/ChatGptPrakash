@@ -41,7 +41,6 @@ export default function Sidebar({
   const scrollContainerRef = useRef(null);
   const prevChatsLength = useRef(chats.length);
 
-  // Update filtered chats when search term or chats change
   useEffect(() => {
     if (searchTerm.trim() === '') {
       setFilteredChats(chats);
@@ -54,13 +53,19 @@ export default function Sidebar({
     }
   }, [searchTerm, chats]);
 
-  // Scroll only when a new chat is added
   useEffect(() => {
     if (scrollContainerRef.current && chats.length > prevChatsLength.current) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
     }
     prevChatsLength.current = chats.length;
   }, [chats]);
+
+
+
+  
+  
+  
+  
 
   const shouldShowFull = !isCollapsed;
   const sidebarWidth = shouldShowFull ? '280px' : '60px';
@@ -211,83 +216,53 @@ export default function Sidebar({
           </div>
         )}
 
-
-
-
-{shouldShowFull && (
-  <div className="flex-grow-1 d-flex flex-column p-3">
-    <h6 className={darkMode ? 'text-light' : 'text-muted'}>Archived Chats</h6>
-    <div style={{ flexGrow: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-      {chats.filter((c) => c.archived).length === 0 ? (
-        <small className={darkMode ? 'text-light' : 'text-muted'}>No archived chats</small>
-      ) : (
-        chats.filter((c) => c.archived).map((chat) => (
-          <div
-            key={chat.id}
-            onClick={() => onSelectChat(chat.id)}
-            className="p-2 rounded-3 mb-2"
-            style={{
-              cursor: 'pointer',
-              backgroundColor: activeChatId === chat.id ? '#0d6efd' : 'transparent',
-            }}
-          >
-            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {chat.title}
-            </span>
-          </div>
-        ))
-      )}
-    </div>
-  </div>
-)}
-
-
         {/* Recent Chats */}
         {shouldShowFull && (
           <div className="flex-grow-1 d-flex flex-column p-3">
             <h6 className={darkMode ? 'text-light' : 'text-muted'}>Recent Chats</h6>
             <div style={{ flexGrow: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-              {chats.length === 0 ? (
+              {chats.filter((c) => !c.archived).length === 0 ? (
                 <small className={darkMode ? 'text-light' : 'text-muted'}>No chats found</small>
               ) : (
-                chats.map((chat) => (
-                  <div
-                    key={chat.id}
-                    onClick={() => onSelectChat(chat.id)}
-                    className={`p-2 rounded-3 mb-2 d-flex justify-content-between align-items-center ${activeChatId === chat.id ? 'bg-primary text-white' : ''}`}
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: activeChatId === chat.id ? '#0d6efd' : 'transparent',
-                      transition: 'background-color 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => {
-                      if (activeChatId !== chat.id) {
-                        e.currentTarget.style.backgroundColor = darkMode ? '#2a2a2a' : '#f1f1f1';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (activeChatId !== chat.id) {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }
-                    }}
-                  >
-                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {chat.title}
-                    </span>
-                    {/* Dropdown fixed to viewport */}
-                    <div style={{ position: 'relative', zIndex: 1000 }}>
-                      <ChatActionsDropdown
-                        chat={chat}
-                        darkMode={darkMode}
-                        onRename={onRename}
-                        onArchive={onArchive}
-                        onDelete={onDelete}
-                        openDropdownChatId={openDropdownChatId}
-                        setOpenDropdownChatId={setOpenDropdownChatId}
-                      />
+                chats
+                  .filter((c) => !c.archived)
+                  .map((chat) => (
+                    <div
+                      key={chat.id}
+                      onClick={() => onSelectChat(chat.id)}
+                      className={`p-2 rounded-3 mb-2 d-flex justify-content-between align-items-center ${activeChatId === chat.id ? 'bg-primary text-white' : ''}`}
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: activeChatId === chat.id ? '#0d6efd' : 'transparent',
+                        transition: 'background-color 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                        if (activeChatId !== chat.id) {
+                          e.currentTarget.style.backgroundColor = darkMode ? '#2a2a2a' : '#f1f1f1';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (activeChatId !== chat.id) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }
+                      }}
+                    >
+                      <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {chat.title}
+                      </span>
+                      <div style={{ position: 'relative', zIndex: 1000 }}>
+                        <ChatActionsDropdown
+                          chat={chat}
+                          darkMode={darkMode}
+                          onRename={onRename}
+                          onArchive={onArchive}
+                          onDelete={onDelete}
+                          openDropdownChatId={openDropdownChatId}
+                          setOpenDropdownChatId={setOpenDropdownChatId}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))
+                  ))
               )}
             </div>
           </div>
@@ -325,26 +300,28 @@ export default function Sidebar({
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <div>
-              {filteredChats.length === 0 ? (
+              {filteredChats.filter((c) => !c.archived).length === 0 ? (
                 <small className={darkMode ? 'text-light' : 'text-muted'}>No chats found</small>
               ) : (
-                filteredChats.map((chat) => (
-                  <div
-                    key={chat.id}
-                    onClick={() => {
-                      onSelectChat(chat.id);
-                      setShowSearchModal(false);
-                    }}
-                    className="p-2 rounded-3 mb-2"
-                    style={{
-                      cursor: 'pointer',
-                      backgroundColor: activeChatId === chat.id ? '#0d6efd' : darkMode ? '#2a2a2a' : '#f9f9f9',
-                      color: activeChatId === chat.id ? 'white' : darkMode ? 'white' : 'black',
-                    }}
-                  >
-                    {chat.title}
-                  </div>
-                ))
+                filteredChats
+                  .filter((c) => !c.archived) 
+                  .map((chat) => (
+                    <div
+                      key={chat.id}
+                      onClick={() => {
+                        onSelectChat(chat.id);
+                        setShowSearchModal(false);
+                      }}
+                      className="p-2 rounded-3 mb-2"
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: activeChatId === chat.id ? '#0d6efd' : darkMode ? '#2a2a2a' : '#f9f9f9',
+                        color: activeChatId === chat.id ? 'white' : darkMode ? 'white' : 'black',
+                      }}
+                    >
+                      {chat.title}
+                    </div>
+                  ))
               )}
             </div>
           </div>
@@ -352,7 +329,9 @@ export default function Sidebar({
       )}
 
       {/* User Info (pinned to bottom) */}
-      <div className={`${shouldShowFull ? 'p-3 border-top' : 'p-2'} mt-auto`} style={{ position: 'sticky', bottom: 0, zIndex: 1000, background: darkMode ? '#111' : '#fff' }}>
+      <div className={`${shouldShowFull ? 'p-3 border-top' : 'p-2'} mt-auto`}
+        style={{ position: 'sticky', bottom: 0, zIndex: 1000, background: darkMode ? '#111' : '#fff' }}
+      >
         {shouldShowFull ? (
           <>
             <div className="d-flex align-items-center" style={{ cursor: 'pointer' }} onClick={() => setShowUserMenu(!showUserMenu)}>
@@ -400,14 +379,51 @@ export default function Sidebar({
             )}
           </>
         ) : (
-          <button
-            className={`btn w-100 rounded-3 d-flex justify-content-center ${darkMode ? 'text-white' : 'text-dark'}`}
-            style={{ background: 'none', border: 'none' }}
-            title="Account"
-            onClick={() => setShowUserMenu(!showUserMenu)}
-          >
-            <User size={16} />
-          </button>
+          <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+            <button
+              className={`btn w-100 rounded-3 d-flex justify-content-center ${darkMode ? 'text-white' : 'text-dark'}`}
+              style={{ background: 'none', border: 'none' }}
+              title="Account"
+              onClick={() => setShowUserMenu(!showUserMenu)}
+            >
+              <User size={16} />
+            </button>
+            {showUserMenu && (
+              <div
+                className={`shadow ${darkMode ? 'bg-dark border border-secondary' : 'bg-white border'}`}
+                style={{
+                  position: "absolute",
+                  bottom: "60px",
+                  left: "50%",
+                  transform: "translateX(-10%)",
+                  minWidth: "180px",
+                  zIndex: 2000
+                }}
+              >
+                <div className="p-2">
+                  <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}>
+                    <ArrowUp size={14} className="me-2" /> Upgrade Plan
+                  </button>
+                  <button
+                    className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`}
+                    style={{ background: 'none', border: 'none' }}
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      onSettings && onSettings();
+                    }}
+                  >
+                    <Settings size={14} className="me-2" /> Settings
+                  </button>
+                  <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}>
+                    <HelpCircle size={14} className="me-2" /> Help
+                  </button>
+                  <button onClick={onLogout} className="btn btn-outline-danger w-100 text-start" style={{ border: 'none' }}>
+                    <LogOut size={14} className="me-2" /> Logout
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
