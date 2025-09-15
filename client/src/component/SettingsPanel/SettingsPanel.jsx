@@ -24,7 +24,6 @@ const SettingsPanel = ({
   onRestoreChat = undefined, // optional callback
   onPermanentlyDeleteChat = undefined // optional callback
 }) => {
-  // Default settings helper
   function getDefaultSettings() {
     return {
       appearance: {
@@ -51,7 +50,6 @@ const SettingsPanel = ({
     };
   }
 
-  // Settings state
   const [settings, setSettings] = useState(() => {
     const savedSettings = localStorage.getItem(
       `chatgpt_settings_${currentUser?.email || "default"}`
@@ -93,7 +91,6 @@ const SettingsPanel = ({
     return getDefaultSettings();
   });
 
-  // Expanded sections
   const [expandedSections, setExpandedSections] = useState({
     appearance: true,
     customInstructions: false,
@@ -103,17 +100,13 @@ const SettingsPanel = ({
     archive: true
   });
 
-  // archived chats local state (source: props.chats if provided, else localStorage)
   const [archivedChats, setArchivedChats] = useState([]);
 
-  // Load archived chats:
   useEffect(() => {
     if (Array.isArray(chats) && chats.length > 0) {
       setArchivedChats(chats.filter((c) => c.archived));
       return;
     }
-
-    // fallback to localStorage
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
@@ -128,7 +121,6 @@ const SettingsPanel = ({
     }
   }, [chats]);
 
-  // Toggle expand
   const toggleSection = (section) => {
     setExpandedSections((prev) => ({
       ...prev,
@@ -136,7 +128,6 @@ const SettingsPanel = ({
     }));
   };
 
-  // Theme change handler
   const handleThemeChange = (newTheme) => {
     setSettings((prev) => ({
       ...prev,
@@ -145,7 +136,6 @@ const SettingsPanel = ({
     setTheme(newTheme);
   };
 
-  // Save settings
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -158,9 +148,6 @@ const SettingsPanel = ({
     }
   }, [settings, currentUser?.email, onSettingsChange]);
 
-  if (!isOpen) return null;
-
-  // Helpers to update storage & optionally call callbacks
   const saveChatsToStorage = (updatedChatsArray) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedChatsArray));
@@ -170,12 +157,9 @@ const SettingsPanel = ({
   };
 
   const handleRestoreChat = (chatId) => {
-    // call callback if provided so parent can update in-memory state
     if (typeof onRestoreChat === "function") {
       try { onRestoreChat(chatId); } catch (err) { console.warn(err); }
     }
-
-    // Update localStorage fallback
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
@@ -195,7 +179,6 @@ const SettingsPanel = ({
     if (typeof onPermanentlyDeleteChat === "function") {
       try { onPermanentlyDeleteChat(chatId); } catch (err) { console.warn(err); }
     }
-
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
@@ -211,13 +194,11 @@ const SettingsPanel = ({
 
   const handleRestoreAll = () => {
     if (!window.confirm("Restore all archived chats? They will appear in your chat list again.")) return;
-
     if (typeof onRestoreChat === "function") {
       archivedChats.forEach((c) => {
         try { onRestoreChat(c.id); } catch (err) { console.warn(err); }
       });
     }
-
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
@@ -235,13 +216,11 @@ const SettingsPanel = ({
 
   const handleDeleteAll = () => {
     if (!window.confirm("Permanently delete all archived chats? This action cannot be undone.")) return;
-
     if (typeof onPermanentlyDeleteChat === "function") {
       archivedChats.forEach((c) => {
         try { onPermanentlyDeleteChat(c.id); } catch (err) { console.warn(err); }
       });
     }
-
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
@@ -254,6 +233,8 @@ const SettingsPanel = ({
       console.warn("Failed to delete all archived in storage:", err);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="settings-overlay" onClick={onClose}>
@@ -287,7 +268,6 @@ const SettingsPanel = ({
                 {expandedSections.appearance ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </div>
             </div>
-
             {expandedSections.appearance && (
               <div className="section-content">
                 <div className="setting-group">
@@ -295,50 +275,49 @@ const SettingsPanel = ({
                     <h4>Theme</h4>
                     <p>Choose how QuantumChat looks to you</p>
                   </div>
-                 <div className="theme-buttons">
-  <button
-    className={`btn ${settings.appearance.theme === 'light' ? 'primary' : 'secondary'}`}
-    onClick={() => handleThemeChange('light')}
-    style={{
-      backgroundColor: settings.appearance.theme === 'light' ? '#007bff' : '#6c757d',
-      color: '#fff',
-      border: 'none',
-      padding: '6px 12px',
-      marginRight: '5px',
-      cursor: 'pointer'
-    }}
-  >
-    Light
-  </button>
-  <button
-    className={`btn ${settings.appearance.theme === 'dark' ? 'primary' : 'secondary'}`}
-    onClick={() => handleThemeChange('dark')}
-    style={{
-      backgroundColor: settings.appearance.theme === 'dark' ? '#007bff' : '#6c757d',
-      color: '#fff',
-      border: 'none',
-      padding: '6px 12px',
-      marginRight: '5px',
-      cursor: 'pointer'
-    }}
-  >
-    Dark
-  </button>
-  <button
-    className={`btn ${settings.appearance.theme === 'system' ? 'primary' : 'secondary'}`}
-    onClick={() => handleThemeChange('system')}
-    style={{
-      backgroundColor: settings.appearance.theme === 'system' ? '#007bff' : '#6c757d',
-      color: '#fff',
-      border: 'none',
-      padding: '6px 12px',
-      cursor: 'pointer'
-    }}
-  >
-    System
-  </button>
-</div>
-
+                  <div className="theme-buttons">
+                    <button
+                      className={`btn ${settings.appearance.theme === 'light' ? 'primary' : 'secondary'}`}
+                      onClick={() => handleThemeChange('light')}
+                      style={{
+                        backgroundColor: settings.appearance.theme === 'light' ? '#007bff' : '#6c757d',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '6px 12px',
+                        marginRight: '5px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Light
+                    </button>
+                    <button
+                      className={`btn ${settings.appearance.theme === 'dark' ? 'primary' : 'secondary'}`}
+                      onClick={() => handleThemeChange('dark')}
+                      style={{
+                        backgroundColor: settings.appearance.theme === 'dark' ? '#007bff' : '#6c757d',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '6px 12px',
+                        marginRight: '5px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Dark
+                    </button>
+                    <button
+                      className={`btn ${settings.appearance.theme === 'system' ? 'primary' : 'secondary'}`}
+                      onClick={() => handleThemeChange('system')}
+                      style={{
+                        backgroundColor: settings.appearance.theme === 'system' ? '#007bff' : '#6c757d',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '6px 12px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      System
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -355,7 +334,6 @@ const SettingsPanel = ({
                 {expandedSections.customInstructions ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </div>
             </div>
-
             {expandedSections.customInstructions && (
               <div className="section-content">
                 <div className="toggle-setting">
@@ -413,7 +391,6 @@ const SettingsPanel = ({
                 {expandedSections.privacy ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </div>
             </div>
-
             {expandedSections.privacy && (
               <div className="section-content">
                 <div className="toggle-setting">
@@ -460,7 +437,6 @@ const SettingsPanel = ({
                 {expandedSections.archive ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </div>
             </div>
-
             {expandedSections.archive && (
               <div className="section-content">
                 <div className="archive-stats">
@@ -543,7 +519,6 @@ const SettingsPanel = ({
                 {expandedSections.advanced ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </div>
             </div>
-
             {expandedSections.advanced && (
               <div className="section-content">
                 <div className="toggle-setting">

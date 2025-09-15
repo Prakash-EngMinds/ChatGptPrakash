@@ -104,13 +104,28 @@ export default function ChatApp() {
   const handleRenameChat = (chatId, newTitle) => {
     setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, title: newTitle } : c)));
   };
-  const handleDeleteChat = (chatId) => {
-    setChats((prev) => prev.filter((c) => c.id !== chatId));
-    if (activeChatId === chatId) setActiveChatId(null);
-  };
-  const handleArchiveChat = (chatId) => {
-    setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, archived: true } : c)));
-  };
+ const handleDeleteChat = (chatId) => {
+  setChats((prev) => prev.filter((c) => c.id !== chatId));
+  if (activeChatId === chatId) setActiveChatId(null);
+};
+
+const handleArchiveChat = (chatId) => {
+  setChats((prev) =>
+    prev.map((c) =>
+      c.id === chatId ? { ...c, archived: true, archivedAt: new Date().toISOString() } : c
+    )
+  );
+};
+
+const handleRestoreChat = (chatId) => {
+  setChats((prev) =>
+    prev.map((c) =>
+      c.id === chatId ? { ...c, archived: false, archivedAt: null } : c
+    )
+  );
+};
+
+
   const handleNewChat = () => {
     setActiveChatId(null);
     setInput("");
@@ -191,10 +206,10 @@ export default function ChatApp() {
             if (c.id !== chatId) return c;
             const msgs = c.messages
               ? c.messages.map((m) =>
-                  m.isStreaming
-                    ? { ...m, text: fallback, isStreaming: false }
-                    : m
-                )
+                m.isStreaming
+                  ? { ...m, text: fallback, isStreaming: false }
+                  : m
+              )
               : [{ role: "assistant", text: fallback, time: nowTime() }];
             return { ...c, messages: msgs };
           })
@@ -319,7 +334,9 @@ export default function ChatApp() {
         isLoading={isLoading}
         onCancelStream={handleCancelStream}
       />
-      <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} theme={theme} setTheme={(t) => setTheme(t)} />
+      <SettingsPanel chats={chats}
+        onRestoreChat={handleRestoreChat}
+        onPermanentlyDeleteChat={handleDeleteChat} isOpen={showSettings} onClose={() => setShowSettings(false)} theme={theme} setTheme={(t) => setTheme(t)} />
     </div>
   );
 }

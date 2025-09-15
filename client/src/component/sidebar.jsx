@@ -60,13 +60,6 @@ export default function Sidebar({
     prevChatsLength.current = chats.length;
   }, [chats]);
 
-
-
-  
-  
-  
-  
-
   const shouldShowFull = !isCollapsed;
   const sidebarWidth = shouldShowFull ? '280px' : '60px';
 
@@ -304,7 +297,7 @@ export default function Sidebar({
                 <small className={darkMode ? 'text-light' : 'text-muted'}>No chats found</small>
               ) : (
                 filteredChats
-                  .filter((c) => !c.archived) 
+                  .filter((c) => !c.archived)
                   .map((chat) => (
                     <div
                       key={chat.id}
