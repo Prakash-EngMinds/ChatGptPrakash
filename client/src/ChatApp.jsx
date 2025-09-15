@@ -1,285 +1,325 @@
-import React, { useState } from 'react';
-import Sidebar from './component/sidebar';
-import ChatArea from './component/ChatArea';
-import AuthForm from './component/AuthForm';
-import SettingsPanel from './component/SettingsPanel/SettingsPanel';
-import { 
-  generateGeminiResponse, 
-  generateGeminiStreamResponse, 
-  isGeminiConfigured,
-  generateConversationTitle,
-  summarizeConversation 
-} from './services/geminiService';
+import React, { useEffect, useState, useRef } from "react";
+import Sidebar from "./component/sidebar";
+import ChatArea from "./component/ChatArea";
+import AuthForm from "./component/AuthForm";
+import SettingsPanel from "./component/SettingsPanel/SettingsPanel";
+import { generateGeminiStreamResponse, isGeminiConfigured } from "./services/geminiService";
 
+const STORAGE_KEY = "chat_history_v1";
+function titleFromText(text) {
+  if (!text) return "Chat";
+  const words = text
+    .replace(/[^a-zA-Z0-9\s]/g, "")
+    .split(/\s+/)
+    .filter(Boolean);
+  const first = words.slice(0, 3).join(" ");
+  const title = first.length ? first : text.slice(0, 15);
+  return title.charAt(0).toUpperCase() + title.slice(1);
+}
+function nowTime() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 export default function ChatApp() {
   const [darkMode, setDarkMode] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(true);
+  const [currentUser, setCurrentUser] = useState({ name: "User" });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [theme, setTheme] = useState("system");
-  const [isLoading, setIsLoading] = useState(false);
-  const [streamingResponse, setStreamingResponse] = useState('');
-  
-  const [messages, setMessages] = useState([
-    { 
-      role: "ai", 
-      text: "Hello! I'm powered by Google's Gemini AI. How can I help you today?", 
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    },
-  ]);
+  const [chats, setChats] = useState(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [activeChatId, setActiveChatId] = useState(null);
   const [input, setInput] = useState("");
-  
-  const [chats] = useState([
-    { title: "How to learn React?", id: 1 },
-    { title: "JavaScript tips", id: 2 },
-    { title: "CSS Grid layout", id: 3 },
-    { title: "Python for beginners", id: 4 },
-    { title: "Node.js best practices", id: 5 },
-  ]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [activeChatId, setActiveChatId] = useState(1);
+  // Streaming Cancel Helper
+  const isStreamingCancelled = useRef(false);
 
-  const handleLogin = (user) => {
-    setCurrentUser(user);
-    setLoggedIn(true);
+  useEffect(() => {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        setChats(Array.isArray(parsed) ? parsed : []);
+      } catch (e) {
+        console.warn("Failed to parse chat history:", e);
+        setChats([]);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    // Only run once when component mounts
+    const params = new URLSearchParams(window.location.search);
+    const chatIdParam = params.get("chatId");
+    if (chatIdParam) {
+      setActiveChatId(chatIdParam);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+  }, [chats]);
+
+  useEffect(() => {
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    let shouldBeDark = darkMode;
+    if (theme === "system") shouldBeDark = systemPrefersDark;
+    else if (theme === "dark") shouldBeDark = true;
+    else if (theme === "light") shouldBeDark = false;
+    setDarkMode(shouldBeDark);
+    document.body.className = shouldBeDark ? "bg-dark text-white" : "bg-light text-dark";
+  }, [theme]);
+
+  const upsertChat = (newChat) => {
+    setChats((prev) => {
+      const found = prev.find((c) => c.id === newChat.id);
+      if (found) {
+        return prev.map((c) => (c.id === newChat.id ? newChat : c));
+      } else {
+        return [newChat, ...prev];
+      }
+    });
   };
 
+  const appendMessageToChat = (chatId, message) => {
+    setChats((prev) =>
+      prev.map((c) => {
+        if (c.id !== chatId) return c;
+        return { ...c, messages: [...(c.messages || []), message] };
+      })
+    );
+  };
+
+  const currentChat = chats.find((c) => c.id === activeChatId) || null;
+  const currentMessages = currentChat ? currentChat.messages || [] : [];
+
+  const handleRenameChat = (chatId, newTitle) => {
+    setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, title: newTitle } : c)));
+  };
+  const handleDeleteChat = (chatId) => {
+    setChats((prev) => prev.filter((c) => c.id !== chatId));
+    if (activeChatId === chatId) setActiveChatId(null);
+  };
+  const handleArchiveChat = (chatId) => {
+    setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, archived: true } : c)));
+  };
+  const handleNewChat = () => {
+    setActiveChatId(null);
+    setInput("");
+  };
+  const handleSelectChat = (chatId) => {
+    setActiveChatId(chatId);
+    setInput("");
+    const params = new URLSearchParams(window.location.search);
+    params.set("chatId", chatId);
+    window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+  };
   const handleLogout = () => {
     setLoggedIn(false);
     setCurrentUser(null);
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
-
-  const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
-  };
-
-  const handleSettings = () => {
-    setShowSettings(true);
-  };
-
-  const handleCloseSettings = () => {
-    setShowSettings(false);
-  };
-
-  const handleSettingsChange = (newSettings) => {
-    // Handle settings changes
-    if (newSettings.appearance?.theme !== theme) {
-      setTheme(newSettings.appearance.theme);
-    }
-    
-    // You can add more settings handling here
-    console.log('Settings updated:', newSettings);
-  };
-
-  const handleSend = async () => {
-    if (input.trim() && !isLoading) {
-      const userMessage = {
-        role: "user",
-        text: input.trim(),
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      // Add user message immediately
-      setMessages(prev => [...prev, userMessage]);
-      const currentInput = input.trim();
-      setInput("");
-      setIsLoading(true);
-      setStreamingResponse('');
-      
-      try {
-        // Check if Gemini is configured
-        if (!isGeminiConfigured()) {
-          throw new Error('Gemini API key not configured. Please check your environment variables.');
-        }
-
-        // Add temporary AI message for streaming
-        const tempAiMessage = {
-          role: "ai",
-          text: '',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          isStreaming: true
-        };
-        
-        setMessages(prev => [...prev, tempAiMessage]);
-        
-        // Generate streaming response with enhanced error handling
-        const fullResponse = await generateGeminiStreamResponse(
-          currentInput, 
-          messages, // conversation history
-          (chunk, isComplete, errorMessage) => {
-            if (errorMessage) {
-              // Handle streaming error
-              console.error('Streaming error:', errorMessage);
-              return;
-            }
-            
-            if (isComplete) {
-              // Stream completed successfully
-              setMessages(prev => {
-                const newMessages = [...prev];
-                const lastMessage = newMessages[newMessages.length - 1];
-                if (lastMessage.isStreaming) {
-                  lastMessage.isStreaming = false;
-                }
-                return newMessages;
-              });
-              return;
-            }
-            
-            if (chunk) {
-              // Update streaming response with new chunk
-              setStreamingResponse(prev => prev + chunk);
-              setMessages(prev => {
-                const newMessages = [...prev];
-                const lastMessage = newMessages[newMessages.length - 1];
-                if (lastMessage.isStreaming) {
-                  lastMessage.text = (lastMessage.text || '') + chunk;
-                }
-                return newMessages;
-              });
-            }
-          }
+  // Handle Cancel during streaming
+  const handleCancelStream = () => {
+    isStreamingCancelled.current = true;
+    setIsLoading(false);
+    setChats((prev) =>
+      prev.map((c) => {
+        if (c.id !== activeChatId) return c;
+        const msgs = (c.messages || []).map((m) =>
+          m.isStreaming ? { ...m, isStreaming: false, text: (m.text || "") + " (Cancelled)" } : m
         );
-        
-        // Finalize the AI response
-        setMessages(prev => {
-          const newMessages = [...prev];
-          const lastMessage = newMessages[newMessages.length - 1];
-          if (lastMessage.isStreaming) {
-            lastMessage.text = fullResponse;
-            lastMessage.isStreaming = false;
-          }
-          return newMessages;
-        });
+        return { ...c, messages: msgs };
+      })
+    );
+  };
 
-        // Auto-generate title for new conversations (after first AI response)
-        if (messages.length <= 2) {
-          try {
-            const title = await generateConversationTitle([...messages, { role: "ai", text: fullResponse }]);
-            // You could save this title to localStorage or a database here
-            console.log('Generated conversation title:', title);
-          } catch (error) {
-            console.warn('Failed to generate conversation title:', error);
-          }
-        }
-        
-      } catch (error) {
-        console.error('Error getting AI response:', error);
-        
-        // Add error message
-        const errorMessage = {
-          role: "ai",
-          text: `Sorry, I encountered an error: ${error.message}. Please try again.`,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          isError: true
-        };
-        
-        // Remove temporary streaming message and add error message
-        setMessages(prev => {
-          const newMessages = [...prev];
-          if (newMessages[newMessages.length - 1].isStreaming) {
-            newMessages[newMessages.length - 1] = errorMessage;
-          } else {
-            newMessages.push(errorMessage);
-          }
-          return newMessages;
-        });
-      } finally {
+  const handleSend = async (text) => {
+    if (!text || !text.trim()) return;
+    const trimmed = text.trim();
+    const userMsg = { role: "user", text: trimmed, time: nowTime() };
+    let chatId = activeChatId;
+    if (!chatId) {
+      chatId = Date.now().toString();
+      const newChat = {
+        id: chatId,
+        title: titleFromText(trimmed),
+        createdAt: new Date().toISOString(),
+        messages: [userMsg],
+      };
+      upsertChat(newChat);
+      setActiveChatId(chatId);
+      const params = new URLSearchParams(window.location.search);
+      params.set("chatId", chatId);
+      window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+    } else {
+      appendMessageToChat(chatId, userMsg);
+    }
+
+    setInput("");
+    setIsLoading(true);
+
+    const assistantPlaceholder = {
+      role: "assistant",
+      text: "",
+      time: nowTime(),
+      isStreaming: true,
+    };
+    appendMessageToChat(chatId, assistantPlaceholder);
+
+    const recentMessages = [
+      ...(chats.find((c) => c.id === chatId)?.messages || []),
+      userMsg,
+    ];
+
+    isStreamingCancelled.current = false; // Reset cancel flag
+
+    try {
+      if (!isGeminiConfigured()) {
+        const fallback =
+          "Gemini API not configured. Add your VITE_GEMINI_API_KEY to .env to get real responses.";
+        setChats((prev) =>
+          prev.map((c) => {
+            if (c.id !== chatId) return c;
+            const msgs = c.messages
+              ? c.messages.map((m) =>
+                  m.isStreaming
+                    ? { ...m, text: fallback, isStreaming: false }
+                    : m
+                )
+              : [{ role: "assistant", text: fallback, time: nowTime() }];
+            return { ...c, messages: msgs };
+          })
+        );
         setIsLoading(false);
-        setStreamingResponse('');
+        return;
       }
+
+      let accumulated = "";
+      await generateGeminiStreamResponse(trimmed, recentMessages, (chunk, isComplete, errorMessage) => {
+        if (isStreamingCancelled.current) {
+          setIsLoading(false);
+          setChats((prev) =>
+            prev.map((c) => {
+              if (c.id !== chatId) return c;
+              const msgs = (c.messages || []).map((m) =>
+                m.isStreaming ? { ...m, isStreaming: false, text: (m.text || "") + " (Cancelled)" } : m
+              );
+              return { ...c, messages: msgs };
+            })
+          );
+          return;
+        }
+
+        if (errorMessage) {
+          setChats((prev) =>
+            prev.map((c) => {
+              if (c.id !== chatId) return c;
+              const msgs = (c.messages || []).map((m) =>
+                m.isStreaming
+                  ? { ...m, text: `Error: ${errorMessage}`, isStreaming: false, isError: true }
+                  : m
+              );
+              return { ...c, messages: msgs };
+            })
+          );
+          setIsLoading(false);
+          return;
+        }
+
+        if (isComplete) {
+          setChats((prev) =>
+            prev.map((c) => {
+              if (c.id !== chatId) return c;
+              const msgs = (c.messages || []).map((m) =>
+                m.isStreaming
+                  ? { ...m, text: accumulated.trim(), isStreaming: false }
+                  : m
+              );
+              return { ...c, messages: msgs };
+            })
+          );
+          setIsLoading(false);
+          return;
+        }
+        if (chunk) {
+          accumulated += chunk;
+          setChats((prev) =>
+            prev.map((c) => {
+              if (c.id !== chatId) return c;
+              const msgs = (c.messages || []).map((m) =>
+                m.isStreaming ? { ...m, text: (m.text || "") + chunk } : m
+              );
+              return { ...c, messages: msgs };
+            })
+          );
+        }
+      });
+    } catch (err) {
+      const errMsg = `Error: ${err.message || "Failed to fetch response."}`;
+      setChats((prev) =>
+        prev.map((c) => {
+          if (c.id !== chatId) return c;
+          const msgs = (c.messages || []).map((m) =>
+            m.isStreaming
+              ? { ...m, text: errMsg, isStreaming: false, isError: true }
+              : m
+          );
+          return { ...c, messages: msgs };
+        })
+      );
+      setIsLoading(false);
     }
   };
-
-  const handleNewChat = () => {
-    setMessages([
-      { 
-        role: "ai", 
-        text: "Hello! I'm powered by Google's Gemini AI. How can I help you today?", 
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      },
-    ]);
-    setActiveChatId(null); // Clear active chat for new chat
-    setStreamingResponse('');
-  };
-
-  const handleSelectChat = (chatId) => {
-    setActiveChatId(chatId);
-    // In a real app, you'd load the chat messages here
-    setMessages([
-      { role: "ai", text: `Welcome back to chat ${chatId}!`, time: "10:00 AM" },
-    ]);
-  };
-
-  // Apply dark mode and theme to body
-  React.useEffect(() => {
-    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    let shouldBeDark = darkMode;
-    
-    if (theme === "system") {
-      shouldBeDark = systemPrefersDark;
-    } else if (theme === "dark") {
-      shouldBeDark = true;
-    } else if (theme === "light") {
-      shouldBeDark = false;
-    }
-    
-    setDarkMode(shouldBeDark);
-    document.body.className = shouldBeDark ? 'bg-dark text-white' : 'bg-light text-dark';
-  }, [theme]);
 
   if (!loggedIn) {
     return (
-      <AuthForm 
-        darkMode={darkMode}
-        toggleDarkMode={toggleDarkMode}
-        onLogin={handleLogin}
+      <AuthForm
+        onLogin={(u) => {
+          setCurrentUser(u);
+          setLoggedIn(true);
+        }}
       />
     );
   }
-
   return (
-    <div className={`d-flex ${darkMode ? 'bg-dark text-white' : 'bg-light text-dark'}`} style={{height: '100vh', overflow: 'hidden'}}>
+    <div className={`d-flex ${darkMode ? "bg-dark text-white" : "bg-light text-dark"}`} style={{ height: "100vh", overflow: "hidden" }}>
       <Sidebar
         darkMode={darkMode}
         chats={chats}
         onNewChat={handleNewChat}
         onLogout={handleLogout}
         isCollapsed={sidebarCollapsed}
-        onToggle={toggleSidebar}
+        onToggle={() => setSidebarCollapsed((s) => !s)}
         currentUser={currentUser}
         onSelectChat={handleSelectChat}
         activeChatId={activeChatId}
-        onSettings={handleSettings}
+        onSettings={() => setShowSettings(true)}
+        onRename={handleRenameChat}
+        onDelete={handleDeleteChat}
+        onArchive={handleArchiveChat}
       />
-      
       <ChatArea
         darkMode={darkMode}
-        toggleDarkMode={toggleDarkMode}
+        toggleDarkMode={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
         sidebarCollapsed={sidebarCollapsed}
-        messages={messages}
+        messages={currentMessages}
         message={input}
         setMessage={setInput}
         onSendMessage={handleSend}
         currentUser={currentUser}
         isLoading={isLoading}
+        onCancelStream={handleCancelStream}
       />
-
-      {/* Settings Panel */}
-      <SettingsPanel
-        isOpen={showSettings}
-        onClose={handleCloseSettings}
-        darkMode={darkMode}
-        theme={theme}
-        setTheme={setTheme}
-        currentUser={currentUser}
-        onSettingsChange={handleSettingsChange}
-      />
+      <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} theme={theme} setTheme={(t) => setTheme(t)} />
     </div>
   );
 }
