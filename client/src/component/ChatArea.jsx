@@ -28,7 +28,8 @@ export default function ChatArea({
   onSendMessage,
   currentUser,
   isLoading = false,
-  onCancelStream
+  onCancelStream,
+  chatTitle
 }) {
   const [copiedStates, setCopiedStates] = useState({});
   const [likedStates, setLikedStates] = useState({});
@@ -109,13 +110,7 @@ export default function ChatArea({
   }, []);
 
   const handleSuggestedClick = (text) => onSendMessage(text);
-
-  const handleFileUpload = (file) => {
-    if (file) {
-      onSendMessage(file.name || "File uploaded");
-    }
-  };
-
+  
   const handleSaveEdit = (msgId) => {
     if (editText.trim()) {
       onSendMessage(editText);
@@ -124,7 +119,6 @@ export default function ChatArea({
     setEditText("");
   };
 
-  // 🔽 Detect scroll
   useEffect(() => {
     const handleScroll = () => {
       if (!scrollContainerRef.current) return;
@@ -132,13 +126,11 @@ export default function ChatArea({
       const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
       setShowDownArrow(distanceFromBottom > 100);
     };
-
     const container = scrollContainerRef.current;
     if (container) {
       container.addEventListener("scroll", handleScroll);
       handleScroll();
     }
-
     return () => {
       if (container) container.removeEventListener("scroll", handleScroll);
     };
@@ -158,13 +150,13 @@ export default function ChatArea({
         position: "relative"
       }}
     >
-      {/* Header */}
+      {/* HEADER, perfectly centered title */}
       <div
-        className={`d-flex justify-content-between align-items-center p-3 shadow border-bottom ${
-          darkMode ? "bg-dark border-dark" : "bg-white"
-        }`}
+        className={`d-flex align-items-center p-3 shadow border-bottom ${darkMode ? "bg-dark border-dark" : "bg-white"}`}
+        style={{ width: "100%" }}
       >
-        <div className="d-flex align-items-center gap-2">
+        {/* Left: logo and ChatClone only when collapsed, blank otherwise */}
+        <div style={{ width: 160, display: "flex", alignItems: "center", justifyContent: "flex-start" }}>
           {sidebarCollapsed && (
             <>
               <img
@@ -172,32 +164,50 @@ export default function ChatArea({
                 alt="ChatClone Logo"
                 style={{ width: "24px", height: "24px" }}
               />
-              <h2 className="h5 fw-bold mb-0 gradient-text">ChatClone</h2>
+              <h2 className="h5 fw-bold mb-0 gradient-text" style={{ marginLeft: 8 }}>ChatClone</h2>
             </>
           )}
         </div>
-        <button
-          onClick={toggleDarkMode}
-          style={{ marginRight: "39px" }}
-          className={`btn rounded-3 ${
-            darkMode ? "btn-outline-light" : "btn-outline-secondary"
-          }`}
-        >
-          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-        </button>
+        {/* Center: ONLY dynamic chat title when expanded, blank otherwise */}
+        <div style={{
+          flex: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minWidth: 0
+        }}>
+          {!sidebarCollapsed && chatTitle && (
+            <h2 className="h5 fw-bold mb-0"
+                style={{
+                  fontWeight: "600",
+                  color: "#2189dd",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis"
+                }}>
+              {chatTitle}
+            </h2>
+          )}
+        </div>
+        {/* Right: Button always on right */}
+        <div style={{ width: 160, display: "flex", justifyContent: "flex-end" }}>
+          <button
+            onClick={toggleDarkMode}
+            className={`btn rounded-3 ${darkMode ? "btn-outline-light" : "btn-outline-secondary"}`}
+          >
+            {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
       </div>
-
       {/* Messages */}
       <div
         ref={scrollContainerRef}
         className="flex-grow-1 overflow-auto p-4"
-        style={{ backgroundColor: "#C9D6DF" }}
+        style={{ backgroundColor: darkMode ? "#2a2a2a" : "#fff" }}
       >
         {messages.length === 0 ? (
           <div
-            className={`text-center my-5 ${
-              darkMode ? "text-white" : "text-muted"
-            }`}
+            className={`text-center my-5 ${darkMode ? "text-white" : "text-muted"}`}
           >
             Start a conversation — type a message below
           </div>
@@ -206,7 +216,6 @@ export default function ChatArea({
             const msgId = `msg-${i}`;
             const isAssistant = msg.role !== "user";
             const suggested = isAssistant ? msg.suggested || [] : [];
-
             return (
               <motion.div
                 key={i}
@@ -222,11 +231,11 @@ export default function ChatArea({
                     ? "bg-dark text-white border border-secondary"
                     : "bg-light"
                 }`}
-               style={{
-  maxWidth: "80%",
-  background: "#7a3d3dff", // set background to red
-  color: "black",    // set text color to black
-}}
+                style={{
+                  maxWidth: "80%",
+                  background: darkMode ? "#666" : "#8e9296ff",
+                  color: darkMode ? "#d42d2dff" : "#164048",
+                }}
               >
                 <div className="fw-medium">
                   {editingMsgId === msgId ? (
@@ -261,7 +270,6 @@ export default function ChatArea({
                   )}
                   {msg.isStreaming && <span className="typing-cursor">|</span>}
                 </div>
-
                 <div
                   className={`small mt-1 ${
                     msg.role === "user"
@@ -277,15 +285,12 @@ export default function ChatArea({
                   {msg.isError ? " • Error" : ""}
                   {msg.isStreaming ? " • Typing..." : ""}
                 </div>
-
                 {isAssistant && !msg.isStreaming && (
                   <div className="d-flex gap-2 mt-2 flex-wrap">
                     <button
                       onClick={() => copyToClipboard(msg.text, msgId)}
                       className={`btn btn-sm ${
-                        darkMode
-                          ? "btn-outline-light"
-                          : "btn-outline-secondary"
+                        darkMode ? "btn-outline-light" : "btn-outline-secondary"
                       }`}
                     >
                       {copiedStates[msgId] ? "Copied!" : <Copy size={14} />}
@@ -317,9 +322,7 @@ export default function ChatArea({
                     <button
                       onClick={() => handleShare(msg.text)}
                       className={`btn btn-sm ${
-                        darkMode
-                          ? "btn-outline-light"
-                          : "btn-outline-secondary"
+                        darkMode ? "btn-outline-light" : "btn-outline-secondary"
                       }`}
                     >
                       <Send size={14} />
@@ -327,9 +330,7 @@ export default function ChatArea({
                     <button
                       onClick={() => handleReadAloud(msgId, msg.text)}
                       className={`btn btn-sm ${
-                        darkMode
-                          ? "btn-outline-light"
-                          : "btn-outline-secondary"
+                        darkMode ? "btn-outline-light" : "btn-outline-secondary"
                       }`}
                     >
                       {speakingStates[msgId] ? (
@@ -340,7 +341,6 @@ export default function ChatArea({
                     </button>
                   </div>
                 )}
-
                 {msg.role === "user" && editingMsgId !== msgId && (
                   <div className="d-flex mt-2">
                     <button
@@ -351,14 +351,13 @@ export default function ChatArea({
                       className={`btn btn-sm ${
                         darkMode
                           ? "btn-outline-light"
-                          : "btn-outline-secondary"
+                          : "btn-outline-light"
                       }`}
                     >
                       <Edit3 size={14} /> Edit
                     </button>
                   </div>
                 )}
-
                 {isAssistant && suggested.length > 0 && (
                   <div className="d-flex gap-2 mt-2 flex-wrap">
                     {suggested.map((s, idx) => (
@@ -378,7 +377,6 @@ export default function ChatArea({
         )}
         <div ref={messagesEndRef} />
       </div>
-
       {/* 🔽 Down Arrow */}
       {showDownArrow && (
         <div
@@ -407,40 +405,12 @@ export default function ChatArea({
           </button>
         </div>
       )}
-
       {/* Input */}
       <div
         className={`p-3 border-top ${darkMode ? "bg-dark border-dark" : "bg-white"}`}
       >
         <div className="d-flex gap-2 align-items-center">
-          <label
-            htmlFor="file-upload"
-            className={`btn rounded-circle d-flex align-items-center justify-content-center ${
-              darkMode ? "btn-outline-light" : "btn-outline-secondary"
-            }`}
-            style={{
-              width: "40px",
-              height: "40px",
-              padding: 0,
-              cursor: "pointer"
-            }}
-            title="Attach file"
-          >
-            <Plus size={18} />
-          </label>
-          <input
-            type="file"
-            id="file-upload"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                handleFileUpload(file);
-                e.target.value = null;
-              }
-            }}
-          />
-
+         
           <input
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -457,17 +427,7 @@ export default function ChatArea({
               darkMode ? "bg-dark text-white border-secondary" : ""
             }`}
           />
-
-          <button
-            className={`btn rounded-circle d-flex align-items-center justify-content-center ${
-              darkMode ? "btn-outline-light" : "btn-outline-secondary"
-            }`}
-            style={{ width: "40px", height: "40px" }}
-            title="Voice input"
-          >
-            <Mic size={18} />
-          </button>
-
+          
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             {isLoading ? (
               <>
@@ -511,7 +471,6 @@ export default function ChatArea({
           </div>
         </div>
       </div>
-
       <style>{`
         .typing-cursor { animation: blink 1s infinite; color: #6c757d; margin-left: 2px; }
         @keyframes blink { 0%,50%{opacity:1}51%,100%{opacity:0} }

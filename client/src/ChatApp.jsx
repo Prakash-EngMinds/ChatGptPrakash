@@ -333,6 +333,7 @@ const handleRestoreChat = (chatId) => {
         currentUser={currentUser}
         isLoading={isLoading}
         onCancelStream={handleCancelStream}
+        chatTitle={currentChat?.title}
       />
       <SettingsPanel chats={chats}
         onRestoreChat={handleRestoreChat}

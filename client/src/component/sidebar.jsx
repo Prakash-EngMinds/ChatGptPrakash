@@ -310,29 +310,53 @@ export default function Sidebar({
               onChange={(e) => setSearchTerm(e.target.value)}
             />
             <div>
-              {filteredChats.filter((c) => !c.archived).length === 0 ? (
-                <small className={darkMode ? 'text-light' : 'text-muted'}>No chats found</small>
-              ) : (
-                filteredChats
-                  .filter((c) => !c.archived)
-                  .map((chat) => (
-                    <div
-                      key={chat.id}
-                      onClick={() => {
-                        onSelectChat(chat.id);
-                        setShowSearchModal(false);
-                      }}
-                      className="p-2 rounded-3 mb-2"
-                      style={{
-                        cursor: 'pointer',
-                        backgroundColor: activeChatId === chat.id ? '#0d6efd' : darkMode ? '#2a2a2a' : '#f9f9f9',
-                        color: activeChatId === chat.id ? 'white' : darkMode ? 'white' : 'black',
-                      }}
-                    >
-                      {chat.title}
-                    </div>
-                  ))
-              )}
+              {filteredChats
+  .filter((c) => !c.archived)
+  .map((chat) => (
+    <div
+      key={chat.id}
+      onClick={() => {
+        onSelectChat(chat.id);
+        setShowSearchModal(false);
+      }}
+      className="p-2 rounded-3 mb-2"
+      style={{
+        cursor: 'pointer',
+        backgroundColor:
+          activeChatId === chat.id
+            ? '#0d6efd'
+            : darkMode
+            ? '#2a2a2a'
+            : '#de7b7bff',
+        color:
+          activeChatId === chat.id
+            ? 'white'
+            : darkMode
+            ? 'white'
+            : 'black',
+        transition: 'background-color 0.2s ease, transform 0.2s ease',
+      }}
+      onMouseEnter={(e) => {
+        if (activeChatId !== chat.id) {
+          e.currentTarget.style.backgroundColor = darkMode
+            ? '#3a3a3a'
+            : '#ececec';
+        }
+        e.currentTarget.style.transform = 'scale(1.02)';
+      }}
+      onMouseLeave={(e) => {
+        if (activeChatId !== chat.id) {
+          e.currentTarget.style.backgroundColor = darkMode
+            ? '#2a2a2a'
+            : '#b17676ff';
+        }
+        e.currentTarget.style.transform = 'scale(1)';
+      }}
+    >
+      {chat.title}
+    </div>
+  ))}
+
             </div>
           </div>
         </div>
