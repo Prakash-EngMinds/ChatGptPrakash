@@ -306,7 +306,7 @@ const handleRestoreChat = (chatId) => {
     );
   }
   return (
-    <div className={`d-flex ${darkMode ? "bg-dark text-white" : "bg-light text-dark"}`} style={{ height: "100vh", overflow: "hidden" }}>
+    <div className={`d-flex ${darkMode ? "bg-dark text-white" : "bg-light text-dark"}`} style={{ height: "100vh", overflow: "hidden", backgroundColor: "#C9D6DF" }}>
       <Sidebar
         darkMode={darkMode}
         chats={chats}

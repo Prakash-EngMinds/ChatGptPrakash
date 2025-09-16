@@ -40,6 +40,7 @@ export default function Sidebar({
 
   const scrollContainerRef = useRef(null);
   const prevChatsLength = useRef(chats.length);
+  const userMenuRef = useRef(null); // ✅ ref for outside click
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -59,6 +60,21 @@ export default function Sidebar({
     }
     prevChatsLength.current = chats.length;
   }, [chats]);
+
+  // ✅ Close user menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setShowUserMenu(false);
+      }
+    };
+    if (showUserMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showUserMenu]);
 
   const shouldShowFull = !isCollapsed;
   const sidebarWidth = shouldShowFull ? '280px' : '60px';
@@ -88,6 +104,7 @@ export default function Sidebar({
     <div
       className={`d-flex flex-column shadow ${darkMode ? 'bg-dark text-white' : 'bg-light'}`}
       style={{
+        backgroundColor: "#1E2022",
         width: sidebarWidth,
         borderRight: `1px solid ${darkMode ? '#333' : 'var(--bs-border-color)'}`,
         height: '100vh',
@@ -322,8 +339,10 @@ export default function Sidebar({
       )}
 
       {/* User Info (pinned to bottom) */}
-      <div className={`${shouldShowFull ? 'p-3 border-top' : 'p-2'} mt-auto`}
+      <div
+        className={`${shouldShowFull ? 'p-3 border-top' : 'p-2'} mt-auto`}
         style={{ position: 'sticky', bottom: 0, zIndex: 1000, background: darkMode ? '#111' : '#fff' }}
+        ref={userMenuRef} // ✅ wrap user menu for outside click
       >
         {shouldShowFull ? (
           <>
@@ -346,6 +365,7 @@ export default function Sidebar({
               <div
                 className={`position-absolute bottom-100 w-100 mb-2 rounded-3 shadow ${darkMode ? 'bg-dark border border-secondary' : 'bg-white border'}`}
                 style={{ left: '12px', right: '12px', zIndex: 1000 }}
+                onClick={(e) => e.stopPropagation()} // ✅ prevent closing when clicking inside
               >
                 <div className="p-2">
                   <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}>
@@ -392,6 +412,7 @@ export default function Sidebar({
                   minWidth: "180px",
                   zIndex: 2000
                 }}
+                onClick={(e) => e.stopPropagation()} // ✅ prevent closing when clicking inside
               >
                 <div className="p-2">
                   <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}>

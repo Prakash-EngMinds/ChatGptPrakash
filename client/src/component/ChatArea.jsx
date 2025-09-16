@@ -178,6 +178,7 @@ export default function ChatArea({
         </div>
         <button
           onClick={toggleDarkMode}
+          style={{ marginRight: "39px" }}
           className={`btn rounded-3 ${
             darkMode ? "btn-outline-light" : "btn-outline-secondary"
           }`}
@@ -190,7 +191,7 @@ export default function ChatArea({
       <div
         ref={scrollContainerRef}
         className="flex-grow-1 overflow-auto p-4"
-        style={{ backgroundColor: "transparent" }}
+        style={{ backgroundColor: "#C9D6DF" }}
       >
         {messages.length === 0 ? (
           <div
@@ -221,13 +222,11 @@ export default function ChatArea({
                     ? "bg-dark text-white border border-secondary"
                     : "bg-light"
                 }`}
-                style={{
-                  maxWidth: "80%",
-                  background:
-                    msg.role === "user"
-                      ? "linear-gradient(to right, #3b82f6, #8b5cf6)"
-                      : undefined
-                }}
+               style={{
+  maxWidth: "80%",
+  background: "#7a3d3dff", // set background to red
+  color: "black",    // set text color to black
+}}
               >
                 <div className="fw-medium">
                   {editingMsgId === msgId ? (
@@ -394,7 +393,7 @@ export default function ChatArea({
           <button
             onClick={scrollToBottom}
             className={`btn rounded-circle shadow ${
-              darkMode ? "btn-dark text-white" : "btn-light text-dark"
+              darkMode ? "btn-light text-dark" : "btn-dark text-white"
             }`}
             style={{
               width: "40px",

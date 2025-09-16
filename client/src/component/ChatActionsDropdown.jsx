@@ -113,9 +113,29 @@ export default function ChatActionsDropdown({
       setDropdownPosition({ top, left: rect.left, direction });
     }
   }, [showDropdown]);
+
+  useEffect(() => {
+  function handleClickOutside(e) {
+    if (
+      showDropdown &&
+      btnRef.current &&
+      !btnRef.current.contains(e.target) && // not clicking the ⋮ button
+      !document.getElementById(`dropdown-${chat.id}`)?.contains(e.target) // not clicking inside dropdown
+    ) {
+      setOpenDropdownChatId(null);
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [showDropdown, chat.id, setOpenDropdownChatId]);
+
   // --- render dropdown
   const dropdownMenu = showDropdown ? (
     <div
+    id={`dropdown-${chat.id}`} 
       style={{
         position: "fixed",
         top: dropdownPosition.top,
@@ -194,6 +214,8 @@ export default function ChatActionsDropdown({
         onClick={() => {
           onArchive(chat.id);
           handleCloseDropdown();
+          alert("Chat archived. To see the archived chats, go to Settings.");
+
         }}
       >
         Archive
