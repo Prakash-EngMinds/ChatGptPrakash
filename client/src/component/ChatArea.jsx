@@ -164,7 +164,7 @@ export default function ChatArea({
                 alt="ChatClone Logo"
                 style={{ width: "24px", height: "24px" }}
               />
-              <h2 className="h5 fw-bold mb-0 gradient-text" style={{ marginLeft: 8 }}>ChatClone</h2>
+              <h2 className="h5 fw-bold mb-0 gradient-text" style={{ marginLeft: 8 }}>QuantumChat</h2>
             </>
           )}
         </div>

@@ -102,9 +102,9 @@ export default function Sidebar({
 
   return (
     <div
-      className={`d-flex flex-column shadow ${darkMode ? 'bg-dark text-white' : 'bg-light'}`}
+      className={`d-flex flex-column shadow ${darkMode ? 'bg-dark text-white' : 'bg-info'}`}
       style={{
-        backgroundColor: "#1E2022",
+        // backgroundColor: "#1E2022",
         width: sidebarWidth,
         borderRight: `1px solid ${darkMode ? '#333' : 'var(--bs-border-color)'}`,
         height: '100vh',
@@ -124,8 +124,8 @@ export default function Sidebar({
           <>
             <div className="d-flex align-items-center gap-2">
               <img src={gptIcon} alt="ChatClone Logo" style={{ width: '24px', height: '24px' }} />
-              <h2 className="h5 fw-bold mb-0 gradient-text" style={{ whiteSpace: 'nowrap' }}>
-                ChatClone
+              <h2 className="h5 fw-bold mb-0 text-success" style={{ whiteSpace: 'nowrap' }}>
+                QuantumChat
               </h2>
             </div>
             <button
