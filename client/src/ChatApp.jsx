@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import Sidebar from "./component/sidebar";
 import ChatArea from "./component/ChatArea";
-import AuthForm from "./component/AuthForm";
 import SettingsPanel from "./component/SettingsPanel/SettingsPanel";
 import { generateGeminiStreamResponse, isGeminiConfigured } from "./services/geminiService";
 
 const STORAGE_KEY = "chat_history_v1";
+
 function titleFromText(text) {
   if (!text) return "Chat";
   const words = text
@@ -16,16 +16,19 @@ function titleFromText(text) {
   const title = first.length ? first : text.slice(0, 15);
   return title.charAt(0).toUpperCase() + title.slice(1);
 }
+
 function nowTime() {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
-export default function ChatApp() {
+
+export default function ChatApp({ user, onLogout }) {
+  // user and logout handled by parent
+
   const [darkMode, setDarkMode] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(true);
-  const [currentUser, setCurrentUser] = useState({ name: "User" });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [theme, setTheme] = useState("system");
+
   const [chats, setChats] = useState(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -39,8 +42,14 @@ export default function ChatApp() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Streaming Cancel Helper
+  const [currentUser, setCurrentUser] = useState(user || { name: "User" });
+
   const isStreamingCancelled = useRef(false);
+
+  // Sync user prop changes with state (optional)
+  useEffect(() => {
+    if (user) setCurrentUser(user);
+  }, [user]);
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -56,12 +65,9 @@ export default function ChatApp() {
   }, []);
 
   useEffect(() => {
-    // Only run once when component mounts
     const params = new URLSearchParams(window.location.search);
     const chatIdParam = params.get("chatId");
-    if (chatIdParam) {
-      setActiveChatId(chatIdParam);
-    }
+    if (chatIdParam) setActiveChatId(chatIdParam);
   }, []);
 
   useEffect(() => {
@@ -78,14 +84,13 @@ export default function ChatApp() {
     document.body.className = shouldBeDark ? "bg-dark text-white" : "bg-light text-dark";
   }, [theme]);
 
+  // Chat management helper functions
+
   const upsertChat = (newChat) => {
     setChats((prev) => {
       const found = prev.find((c) => c.id === newChat.id);
-      if (found) {
-        return prev.map((c) => (c.id === newChat.id ? newChat : c));
-      } else {
-        return [newChat, ...prev];
-      }
+      if (found) return prev.map((c) => (c.id === newChat.id ? newChat : c));
+      else return [newChat, ...prev];
     });
   };
 
@@ -104,32 +109,33 @@ export default function ChatApp() {
   const handleRenameChat = (chatId, newTitle) => {
     setChats((prev) => prev.map((c) => (c.id === chatId ? { ...c, title: newTitle } : c)));
   };
- const handleDeleteChat = (chatId) => {
-  setChats((prev) => prev.filter((c) => c.id !== chatId));
-  if (activeChatId === chatId) setActiveChatId(null);
-};
 
-const handleArchiveChat = (chatId) => {
-  setChats((prev) =>
-    prev.map((c) =>
-      c.id === chatId ? { ...c, archived: true, archivedAt: new Date().toISOString() } : c
-    )
-  );
-};
+  const handleDeleteChat = (chatId) => {
+    setChats((prev) => prev.filter((c) => c.id !== chatId));
+    if (activeChatId === chatId) setActiveChatId(null);
+  };
 
-const handleRestoreChat = (chatId) => {
-  setChats((prev) =>
-    prev.map((c) =>
-      c.id === chatId ? { ...c, archived: false, archivedAt: null } : c
-    )
-  );
-};
+  const handleArchiveChat = (chatId) => {
+    setChats((prev) =>
+      prev.map((c) =>
+        c.id === chatId ? { ...c, archived: true, archivedAt: new Date().toISOString() } : c
+      )
+    );
+  };
 
+  const handleRestoreChat = (chatId) => {
+    setChats((prev) =>
+      prev.map((c) =>
+        c.id === chatId ? { ...c, archived: false, archivedAt: null } : c
+      )
+    );
+  };
 
   const handleNewChat = () => {
     setActiveChatId(null);
     setInput("");
   };
+
   const handleSelectChat = (chatId) => {
     setActiveChatId(chatId);
     setInput("");
@@ -137,12 +143,13 @@ const handleRestoreChat = (chatId) => {
     params.set("chatId", chatId);
     window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
   };
+
+  // Logout just calls parent onLogout handler so parent updates loggedIn flag
   const handleLogout = () => {
-    setLoggedIn(false);
-    setCurrentUser(null);
+    setCurrentUser(null); // internal reset just in case
+    onLogout && onLogout();
   };
 
-  // Handle Cancel during streaming
   const handleCancelStream = () => {
     isStreamingCancelled.current = true;
     setIsLoading(false);
@@ -195,7 +202,7 @@ const handleRestoreChat = (chatId) => {
       userMsg,
     ];
 
-    isStreamingCancelled.current = false; // Reset cancel flag
+    isStreamingCancelled.current = false;
 
     try {
       if (!isGeminiConfigured()) {
@@ -295,18 +302,11 @@ const handleRestoreChat = (chatId) => {
     }
   };
 
-  if (!loggedIn) {
-    return (
-      <AuthForm
-        onLogin={(u) => {
-          setCurrentUser(u);
-          setLoggedIn(true);
-        }}
-      />
-    );
-  }
   return (
-    <div className={`d-flex ${darkMode ? "bg-dark text-white" : "bg-light text-dark"}`} style={{ height: "100vh", overflow: "hidden", backgroundColor: "#C9D6DF" }}>
+    <div
+      className={`d-flex ${darkMode ? "bg-dark text-white" : "bg-light text-dark"}`}
+      style={{ height: "100vh", overflow: "hidden", backgroundColor: "#C9D6DF" }}
+    >
       <Sidebar
         darkMode={darkMode}
         chats={chats}
@@ -335,9 +335,15 @@ const handleRestoreChat = (chatId) => {
         onCancelStream={handleCancelStream}
         chatTitle={currentChat?.title}
       />
-      <SettingsPanel chats={chats}
+      <SettingsPanel
+        chats={chats}
         onRestoreChat={handleRestoreChat}
-        onPermanentlyDeleteChat={handleDeleteChat} isOpen={showSettings} onClose={() => setShowSettings(false)} theme={theme} setTheme={(t) => setTheme(t)} />
+        onPermanentlyDeleteChat={handleDeleteChat}
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        theme={theme}
+        setTheme={(t) => setTheme(t)}
+      />
     </div>
   );
 }
