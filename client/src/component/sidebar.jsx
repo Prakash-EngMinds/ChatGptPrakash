@@ -30,7 +30,9 @@ export default function Sidebar({
   onSettings,
   onRename,
   onArchive,
-  onDelete
+  onDelete,
+  onShowUpgradePlan,
+  currentPlan    
 }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -380,7 +382,8 @@ export default function Sidebar({
                 </div>
                 <div>
                   <div className="fw-semibold small">{currentUser?.name || 'User'}</div>
-                  <small className={darkMode ? 'text-light' : 'text-muted'}>Free Plan</small>
+                  <small className={darkMode ? 'text-light' : 'text-muted'}>{currentPlan}</small>
+
                 </div>
               </div>
             </div>
@@ -392,7 +395,10 @@ export default function Sidebar({
                 onClick={(e) => e.stopPropagation()} // ✅ prevent closing when clicking inside
               >
                 <div className="p-2">
-                  <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}>
+                  <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}  onClick={() => {
+                      setShowUserMenu(false);          
+                      onShowUpgradePlan && onShowUpgradePlan();
+                    }}>
                     <ArrowUp size={14} className="me-2" /> Upgrade Plan
                   </button>
                   <button
@@ -439,7 +445,10 @@ export default function Sidebar({
                 onClick={(e) => e.stopPropagation()} // ✅ prevent closing when clicking inside
               >
                 <div className="p-2">
-                  <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}>
+                  <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}  onClick={() => {
+    setShowUserMenu(false);
+    onShowUpgradePlan && onShowUpgradePlan();
+  }}>
                     <ArrowUp size={14} className="me-2" /> Upgrade Plan
                   </button>
                   <button

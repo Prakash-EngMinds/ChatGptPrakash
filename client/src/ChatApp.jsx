@@ -3,6 +3,7 @@ import Sidebar from "./component/sidebar";
 import ChatArea from "./component/ChatArea";
 import SettingsPanel from "./component/SettingsPanel/SettingsPanel";
 import { generateGeminiStreamResponse, isGeminiConfigured } from "./services/geminiService";
+import UpgradePlan from "./component/UpgradePlan";
 
 const STORAGE_KEY = "chat_history_v1";
 
@@ -27,6 +28,10 @@ export default function ChatApp({ user, onLogout }) {
   const [darkMode, setDarkMode] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showUpgradePlan, setShowUpgradePlan] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState("Free Plan");
+
+
   const [theme, setTheme] = useState("system");
 
   const [chats, setChats] = useState(() => {
@@ -307,43 +312,58 @@ export default function ChatApp({ user, onLogout }) {
       className={`d-flex ${darkMode ? "bg-dark text-white" : "bg-light text-dark"}`}
       style={{ height: "100vh", overflow: "hidden", backgroundColor: "#C9D6DF" }}
     >
-      <Sidebar
-        darkMode={darkMode}
-        chats={chats}
-        onNewChat={handleNewChat}
-        onLogout={handleLogout}
-        isCollapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed((s) => !s)}
-        currentUser={currentUser}
-        onSelectChat={handleSelectChat}
-        activeChatId={activeChatId}
-        onSettings={() => setShowSettings(true)}
-        onRename={handleRenameChat}
-        onDelete={handleDeleteChat}
-        onArchive={handleArchiveChat}
+     {showUpgradePlan ? (
+      <UpgradePlan 
+        darkMode={darkMode} 
+        onClose={() => setShowUpgradePlan(false)} 
+        onUpgradeSuccess={() => {
+      setShowUpgradePlan(false);
+      setCurrentPlan("Pro");
+    }} 
       />
-      <ChatArea
-        darkMode={darkMode}
-        toggleDarkMode={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-        sidebarCollapsed={sidebarCollapsed}
-        messages={currentMessages}
-        message={input}
-        setMessage={setInput}
-        onSendMessage={handleSend}
-        currentUser={currentUser}
-        isLoading={isLoading}
-        onCancelStream={handleCancelStream}
-        chatTitle={currentChat?.title}
-      />
-      <SettingsPanel
-        chats={chats}
-        onRestoreChat={handleRestoreChat}
-        onPermanentlyDeleteChat={handleDeleteChat}
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-        theme={theme}
-        setTheme={(t) => setTheme(t)}
-      />
+    ) : (
+      <>
+        <Sidebar
+          darkMode={darkMode}
+          chats={chats}
+          onNewChat={handleNewChat}
+          onLogout={handleLogout}
+          isCollapsed={sidebarCollapsed}
+          onToggle={() => setSidebarCollapsed((s) => !s)}
+          currentUser={currentUser}
+          onSelectChat={handleSelectChat}
+          activeChatId={activeChatId}
+          onSettings={() => setShowSettings(true)}
+          onRename={handleRenameChat}
+          onDelete={handleDeleteChat}
+          onArchive={handleArchiveChat}
+          onShowUpgradePlan={() => setShowUpgradePlan(true)} // Pass callback to Sidebar
+          currentPlan={currentPlan}
+        />
+        <ChatArea
+          darkMode={darkMode}
+          toggleDarkMode={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+          sidebarCollapsed={sidebarCollapsed}
+          messages={currentMessages}
+          message={input}
+          setMessage={setInput}
+          onSendMessage={handleSend}
+          currentUser={currentUser}
+          isLoading={isLoading}
+          onCancelStream={handleCancelStream}
+          chatTitle={currentChat?.title}
+        />
+        <SettingsPanel
+          chats={chats}
+          onRestoreChat={handleRestoreChat}
+          onPermanentlyDeleteChat={handleDeleteChat}
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+          theme={theme}
+          setTheme={(t) => setTheme(t)}
+        />
+      </>
+    )}
     </div>
   );
 }
