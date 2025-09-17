@@ -232,7 +232,7 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
               <div className="text-center p-5">
                 <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }}>
                   <img src={gptIcon} alt="ChatClone Logo" style={{ width: '120px', height: '120px' }} className="mb-4" />
-                  <h1 className="display-4 fw-bold mb-3" style={{ color: '#64748b' }}>ChatClone</h1>
+                  <h1 className="display-4 fw-bold mb-3" style={{ color: '#64748b' }}>QuantumChat</h1>
                   <p className="lead mb-4" style={{ color: '#64748b' }}>Enterprise-grade AI platform delivering intelligent conversational experiences.</p>
                 </motion.div>
               </div>

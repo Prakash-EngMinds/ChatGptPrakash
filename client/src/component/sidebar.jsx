@@ -12,7 +12,8 @@ import {
   User,
   ArrowUp,
   Settings,
-  HelpCircle
+  HelpCircle,
+  Crown
 } from 'lucide-react';
 import gptIcon from '../assets/gpt-clone-icon.png';
 import ChatActionsDropdown from './ChatActionsDropdown';
@@ -32,7 +33,7 @@ export default function Sidebar({
   onArchive,
   onDelete,
   onShowUpgradePlan,
-  currentPlan    
+  currentPlan
 }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
@@ -104,7 +105,7 @@ export default function Sidebar({
 
   return (
     <div
-      className={`d-flex flex-column shadow ${darkMode ? 'bg-dark text-white' : 'bg-info'}`}
+      className={`d-flex flex-column shadow ${darkMode ? '#1E2022 text-white' : 'bg-white text-dark'}`}
       style={{
         // backgroundColor: "#1E2022",
         width: sidebarWidth,
@@ -313,51 +314,51 @@ export default function Sidebar({
             />
             <div>
               {filteredChats
-  .filter((c) => !c.archived)
-  .map((chat) => (
-    <div
-      key={chat.id}
-      onClick={() => {
-        onSelectChat(chat.id);
-        setShowSearchModal(false);
-      }}
-      className="p-2 rounded-3 mb-2"
-      style={{
-        cursor: 'pointer',
-        backgroundColor:
-          activeChatId === chat.id
-            ? '#0d6efd'
-            : darkMode
-            ? '#2a2a2a'
-            : '#de7b7bff',
-        color:
-          activeChatId === chat.id
-            ? 'white'
-            : darkMode
-            ? 'white'
-            : 'black',
-        transition: 'background-color 0.2s ease, transform 0.2s ease',
-      }}
-      onMouseEnter={(e) => {
-        if (activeChatId !== chat.id) {
-          e.currentTarget.style.backgroundColor = darkMode
-            ? '#3a3a3a'
-            : '#ececec';
-        }
-        e.currentTarget.style.transform = 'scale(1.02)';
-      }}
-      onMouseLeave={(e) => {
-        if (activeChatId !== chat.id) {
-          e.currentTarget.style.backgroundColor = darkMode
-            ? '#2a2a2a'
-            : '#b17676ff';
-        }
-        e.currentTarget.style.transform = 'scale(1)';
-      }}
-    >
-      {chat.title}
-    </div>
-  ))}
+                .filter((c) => !c.archived)
+                .map((chat) => (
+                  <div
+                    key={chat.id}
+                    onClick={() => {
+                      onSelectChat(chat.id);
+                      setShowSearchModal(false);
+                    }}
+                    className="p-2 rounded-3 mb-2"
+                    style={{
+                      cursor: 'pointer',
+                      backgroundColor:
+                        activeChatId === chat.id
+                          ? '#0d6efd'
+                          : darkMode
+                            ? '#2a2a2a'
+                            : '#de7b7bff',
+                      color:
+                        activeChatId === chat.id
+                          ? 'white'
+                          : darkMode
+                            ? 'white'
+                            : 'black',
+                      transition: 'background-color 0.2s ease, transform 0.2s ease',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (activeChatId !== chat.id) {
+                        e.currentTarget.style.backgroundColor = darkMode
+                          ? '#3a3a3a'
+                          : '#ececec';
+                      }
+                      e.currentTarget.style.transform = 'scale(1.02)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (activeChatId !== chat.id) {
+                        e.currentTarget.style.backgroundColor = darkMode
+                          ? '#2a2a2a'
+                          : '#b17676ff';
+                      }
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  >
+                    {chat.title}
+                  </div>
+                ))}
 
             </div>
           </div>
@@ -380,11 +381,27 @@ export default function Sidebar({
                 >
                   <User size={16} />
                 </div>
-                <div>
-                  <div className="fw-semibold small">{currentUser?.name || 'User'}</div>
-                  <small className={darkMode ? 'text-light' : 'text-muted'}>{currentPlan}</small>
+                <div className="d-flex align-items-center gap-2">
+  <div className="fw-semibold small">{currentUser?.name || 'User'}</div>
 
-                </div>
+  {currentPlan === "Free" && (
+    <small className={darkMode ? 'text-light' : 'text-muted'}>
+      {currentPlan}
+    </small>
+  )}
+
+  {currentPlan === "Pro" && (
+    <span
+      className="badge bg-warning d-flex align-items-center"
+      style={{ whiteSpace: "nowrap" }}
+    >
+      <small className={darkMode ? 'text-light' : 'text-muted'}>{currentPlan}</small>
+      <Crown size={12} style={{ marginLeft: 4, color: '#92400e' }} />
+    </span>
+  )}
+</div>
+
+
               </div>
             </div>
 
@@ -395,12 +412,19 @@ export default function Sidebar({
                 onClick={(e) => e.stopPropagation()} // ✅ prevent closing when clicking inside
               >
                 <div className="p-2">
-                  <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}  onClick={() => {
-                      setShowUserMenu(false);          
-                      onShowUpgradePlan && onShowUpgradePlan();
-                    }}>
-                    <ArrowUp size={14} className="me-2" /> Upgrade Plan
-                  </button>
+                  {currentPlan !== "Pro" && (
+                    <button
+                      className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`}
+                      style={{ background: 'none', border: 'none' }}
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        onShowUpgradePlan && onShowUpgradePlan();
+                      }}
+                    >
+                      <ArrowUp size={14} className="me-2" /> Upgrade Plan
+                    </button>
+                  )}
+
                   <button
                     className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`}
                     style={{ background: 'none', border: 'none' }}
@@ -445,12 +469,19 @@ export default function Sidebar({
                 onClick={(e) => e.stopPropagation()} // ✅ prevent closing when clicking inside
               >
                 <div className="p-2">
-                  <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}  onClick={() => {
-    setShowUserMenu(false);
-    onShowUpgradePlan && onShowUpgradePlan();
-  }}>
-                    <ArrowUp size={14} className="me-2" /> Upgrade Plan
-                  </button>
+                  {currentPlan !== "Pro" && (
+                    <button
+                      className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`}
+                      style={{ background: 'none', border: 'none' }}
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        onShowUpgradePlan && onShowUpgradePlan();
+                      }}
+                    >
+                      <ArrowUp size={14} className="me-2" /> Upgrade Plan
+                    </button>
+                  )}
+
                   <button
                     className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`}
                     style={{ background: 'none', border: 'none' }}
