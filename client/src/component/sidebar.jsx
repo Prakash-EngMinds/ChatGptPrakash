@@ -382,7 +382,7 @@ export default function Sidebar({
                   <User size={16} />
                 </div>
                 <div className="d-flex align-items-center gap-2">
-  <div className="fw-semibold small">{currentUser?.name || 'User'}</div>
+  <div className="fw-semibold small">{currentUser?.name || currentUser?.username || "User"}</div>
 
   {currentPlan === "Free" && (
     <small className={darkMode ? 'text-light' : 'text-muted'}>
@@ -438,9 +438,13 @@ export default function Sidebar({
                   <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}>
                     <HelpCircle size={14} className="me-2" /> Help
                   </button>
-                  <button onClick={onLogout} className="btn btn-outline-danger w-100 text-start" style={{ border: 'none' }}>
-                    <LogOut size={14} className="me-2" /> Logout
-                  </button>
+                 <button
+  onClick={onLogout}
+  className="btn btn-outline-danger w-100 text-start"
+  style={{ border: 'none' }}
+>
+  <LogOut size={14} className="me-2" /> Logout
+</button>
                 </div>
               </div>
             )}

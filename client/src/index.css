@@ -119,3 +119,10 @@
   background-color: #374151 !important;
   border-color: #6b7280 !important;
 }
+
+
+body.bg-dark input::placeholder,
+body.bg-dark textarea::placeholder {
+  color: #ccc !important;
+  opacity: 1;
+}

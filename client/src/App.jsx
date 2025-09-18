@@ -2,14 +2,25 @@ import React, { useState, useEffect } from 'react';
 import ChatApp from './ChatApp';
 import AuthForm from './component/AuthForm';
 
+const USER_KEY = "chatapp_remember_user";
+
 function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [loggedIn, setLoggedIn] = useState(() => {
+    const stored = localStorage.getItem(USER_KEY);
+    return stored ? true : false;
+  });
+
+  const [currentUser, setCurrentUser] = useState(() => {
+    const stored = localStorage.getItem(USER_KEY);
+    return stored ? JSON.parse(stored) : null;
+  });
+
   const [darkMode, setDarkMode] = useState(false);
 
   const handleLogin = (user) => {
     setCurrentUser(user);
     setLoggedIn(true);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
 
     // Set theme based on user prefs or system
     const userTheme = user.preferences?.theme || 'system';
@@ -21,7 +32,7 @@ function App() {
     setCurrentUser(null);
     setLoggedIn(false);
     setDarkMode(false);
-    localStorage.removeItem('chatapp_remember_user');
+    localStorage.removeItem(USER_KEY);
   };
 
   const toggleDarkMode = () => {

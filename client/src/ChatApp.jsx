@@ -9,10 +9,7 @@ const STORAGE_KEY = "chat_history_v1";
 
 function titleFromText(text) {
   if (!text) return "Chat";
-  const words = text
-    .replace(/[^a-zA-Z0-9\s]/g, "")
-    .split(/\s+/)
-    .filter(Boolean);
+  const words = text.replace(/[^a-zA-Z0-9\s]/g, "").split(/\s+/).filter(Boolean);
   const first = words.slice(0, 3).join(" ");
   const title = first.length ? first : text.slice(0, 15);
   return title.charAt(0).toUpperCase() + title.slice(1);
@@ -23,15 +20,11 @@ function nowTime() {
 }
 
 export default function ChatApp({ user, onLogout }) {
-  // user and logout handled by parent
-
   const [darkMode, setDarkMode] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showUpgradePlan, setShowUpgradePlan] = useState(false);
   const [currentPlan, setCurrentPlan] = useState("Free Plan");
-
-
   const [theme, setTheme] = useState("system");
 
   const [chats, setChats] = useState(() => {
@@ -48,10 +41,8 @@ export default function ChatApp({ user, onLogout }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const [currentUser, setCurrentUser] = useState(user || { name: "User" });
-
   const isStreamingCancelled = useRef(false);
 
-  // Sync user prop changes with state (optional)
   useEffect(() => {
     if (user) setCurrentUser(user);
   }, [user]);
@@ -89,8 +80,7 @@ export default function ChatApp({ user, onLogout }) {
     document.body.className = shouldBeDark ? "bg-dark text-white" : "bg-light text-dark";
   }, [theme]);
 
-  // Chat management helper functions
-
+  // Chat management
   const upsertChat = (newChat) => {
     setChats((prev) => {
       const found = prev.find((c) => c.id === newChat.id);
@@ -101,10 +91,7 @@ export default function ChatApp({ user, onLogout }) {
 
   const appendMessageToChat = (chatId, message) => {
     setChats((prev) =>
-      prev.map((c) => {
-        if (c.id !== chatId) return c;
-        return { ...c, messages: [...(c.messages || []), message] };
-      })
+      prev.map((c) => (c.id !== chatId ? c : { ...c, messages: [...(c.messages || []), message] }))
     );
   };
 
@@ -130,9 +117,7 @@ export default function ChatApp({ user, onLogout }) {
 
   const handleRestoreChat = (chatId) => {
     setChats((prev) =>
-      prev.map((c) =>
-        c.id === chatId ? { ...c, archived: false, archivedAt: null } : c
-      )
+      prev.map((c) => (c.id === chatId ? { ...c, archived: false, archivedAt: null } : c))
     );
   };
 
@@ -149,9 +134,8 @@ export default function ChatApp({ user, onLogout }) {
     window.history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
   };
 
-  // Logout just calls parent onLogout handler so parent updates loggedIn flag
   const handleLogout = () => {
-    setCurrentUser(null); // internal reset just in case
+    setCurrentUser(null);
     onLogout && onLogout();
   };
 
@@ -218,10 +202,8 @@ export default function ChatApp({ user, onLogout }) {
             if (c.id !== chatId) return c;
             const msgs = c.messages
               ? c.messages.map((m) =>
-                m.isStreaming
-                  ? { ...m, text: fallback, isStreaming: false }
-                  : m
-              )
+                  m.isStreaming ? { ...m, text: fallback, isStreaming: false } : m
+                )
               : [{ role: "assistant", text: fallback, time: nowTime() }];
             return { ...c, messages: msgs };
           })
@@ -267,9 +249,7 @@ export default function ChatApp({ user, onLogout }) {
             prev.map((c) => {
               if (c.id !== chatId) return c;
               const msgs = (c.messages || []).map((m) =>
-                m.isStreaming
-                  ? { ...m, text: accumulated.trim(), isStreaming: false }
-                  : m
+                m.isStreaming ? { ...m, text: accumulated.trim(), isStreaming: false } : m
               );
               return { ...c, messages: msgs };
             })
@@ -296,9 +276,7 @@ export default function ChatApp({ user, onLogout }) {
         prev.map((c) => {
           if (c.id !== chatId) return c;
           const msgs = (c.messages || []).map((m) =>
-            m.isStreaming
-              ? { ...m, text: errMsg, isStreaming: false, isError: true }
-              : m
+            m.isStreaming ? { ...m, text: errMsg, isStreaming: false, isError: true } : m
           );
           return { ...c, messages: msgs };
         })
@@ -312,58 +290,58 @@ export default function ChatApp({ user, onLogout }) {
       className={`d-flex ${darkMode ? "bg-dark text-white" : "bg-light text-dark"}`}
       style={{ height: "100vh", overflow: "hidden", backgroundColor: "#C9D6DF" }}
     >
-     {showUpgradePlan ? (
-      <UpgradePlan 
-        darkMode={darkMode} 
-        onClose={() => setShowUpgradePlan(false)} 
-        onUpgradeSuccess={() => {
-      setShowUpgradePlan(false);
-      setCurrentPlan("Pro");
-    }} 
-      />
-    ) : (
-      <>
-        <Sidebar
+      {showUpgradePlan ? (
+        <UpgradePlan
           darkMode={darkMode}
-          chats={chats}
-          onNewChat={handleNewChat}
-          onLogout={handleLogout}
-          isCollapsed={sidebarCollapsed}
-          onToggle={() => setSidebarCollapsed((s) => !s)}
-          currentUser={currentUser}
-          onSelectChat={handleSelectChat}
-          activeChatId={activeChatId}
-          onSettings={() => setShowSettings(true)}
-          onRename={handleRenameChat}
-          onDelete={handleDeleteChat}
-          onArchive={handleArchiveChat}
-          onShowUpgradePlan={() => setShowUpgradePlan(true)} // Pass callback to Sidebar
-          currentPlan={currentPlan}
+          onClose={() => setShowUpgradePlan(false)}
+          onUpgradeSuccess={() => {
+            setShowUpgradePlan(false);
+            setCurrentPlan("Pro");
+          }}
         />
-        <ChatArea
-          darkMode={darkMode}
-          toggleDarkMode={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-          sidebarCollapsed={sidebarCollapsed}
-          messages={currentMessages}
-          message={input}
-          setMessage={setInput}
-          onSendMessage={handleSend}
-          currentUser={currentUser}
-          isLoading={isLoading}
-          onCancelStream={handleCancelStream}
-          chatTitle={currentChat?.title}
-        />
-        <SettingsPanel
-          chats={chats}
-          onRestoreChat={handleRestoreChat}
-          onPermanentlyDeleteChat={handleDeleteChat}
-          isOpen={showSettings}
-          onClose={() => setShowSettings(false)}
-          theme={theme}
-          setTheme={(t) => setTheme(t)}
-        />
-      </>
-    )}
+      ) : (
+        <>
+          <Sidebar
+            darkMode={darkMode}
+            chats={chats}
+            onNewChat={handleNewChat}
+            onLogout={handleLogout}
+            isCollapsed={sidebarCollapsed}
+            onToggle={() => setSidebarCollapsed((s) => !s)}
+            currentUser={currentUser}
+            onSelectChat={handleSelectChat}
+            activeChatId={activeChatId}
+            onSettings={() => setShowSettings(true)}
+            onRename={handleRenameChat}
+            onDelete={handleDeleteChat}
+            onArchive={handleArchiveChat}
+            onShowUpgradePlan={() => setShowUpgradePlan(true)}
+            currentPlan={currentPlan}
+          />
+          <ChatArea
+            darkMode={darkMode}
+            toggleDarkMode={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+            sidebarCollapsed={sidebarCollapsed}
+            messages={currentMessages}
+            message={input}
+            setMessage={setInput}
+            onSendMessage={handleSend}
+            currentUser={currentUser}
+            isLoading={isLoading}
+            onCancelStream={handleCancelStream}
+            chatTitle={currentChat?.title}
+          />
+          <SettingsPanel
+            chats={chats}
+            onRestoreChat={handleRestoreChat}
+            onPermanentlyDeleteChat={handleDeleteChat}
+            isOpen={showSettings}
+            onClose={() => setShowSettings(false)}
+            theme={theme}
+            setTheme={(t) => setTheme(t)}
+          />
+        </>
+      )}
     </div>
   );
 }

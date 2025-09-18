@@ -107,6 +107,9 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
 
     setSuccess('🎉 Account created successfully! Redirecting to login...');
     setIsLoading(false);
+    setTimeout(() => {
+  onLogin(newUser);
+}, 1500);
 
     setTimeout(() => {
       setIsLoginView(true);
