@@ -126,8 +126,8 @@ export default function Sidebar({
         {shouldShowFull ? (
           <>
             <div className="d-flex align-items-center gap-2">
-              <img src={gptIcon} alt="ChatClone Logo" style={{ width: '24px', height: '24px' }} />
-              <h2 className="h5 fw-bold mb-0 text-success" style={{ whiteSpace: 'nowrap' }}>
+              <img onClick={onNewChat} src={gptIcon} alt="ChatClone Logo" style={{ width: '24px', height: '24px', cursor: 'pointer' }} />
+              <h2 onClick={onNewChat} className="h5 fw-bold mb-0 text-success" style={{ whiteSpace: 'nowrap', cursor: 'pointer' }}>
                 QuantumChat
               </h2>
             </div>
@@ -382,24 +382,24 @@ export default function Sidebar({
                   <User size={16} />
                 </div>
                 <div className="d-flex align-items-center gap-2">
-  <div className="fw-semibold small">{currentUser?.name || currentUser?.username || "User"}</div>
+                  <div className="fw-semibold small">{currentUser?.name || currentUser?.username || "User"}</div>
 
-  {currentPlan === "Free" && (
-    <small className={darkMode ? 'text-light' : 'text-muted'}>
-      {currentPlan}
-    </small>
-  )}
+                  {currentPlan === "Free" && (
+                    <small className={darkMode ? 'text-success' : 'text-muted'}>
+                      {currentPlan} Plan
+                    </small>
+                  )}
 
-  {currentPlan === "Pro" && (
-    <span
-      className="badge bg-warning d-flex align-items-center"
-      style={{ whiteSpace: "nowrap" }}
-    >
-      <small className={darkMode ? 'text-light' : 'text-muted'}>{currentPlan}</small>
-      <Crown size={12} style={{ marginLeft: 4, color: '#92400e' }} />
-    </span>
-  )}
-</div>
+                  {currentPlan === "Pro" && (
+                    <span
+                      className="badge bg-warning d-flex align-items-center"
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      <small className={darkMode ? 'text-light' : 'text-muted'}>{currentPlan}</small>
+                      <Crown size={12} style={{ marginLeft: 4, color: '#92400e' }} />
+                    </span>
+                  )}
+                </div>
 
 
               </div>
@@ -438,13 +438,13 @@ export default function Sidebar({
                   <button className={`btn w-100 text-start mb-1 ${darkMode ? 'text-white' : 'text-dark'}`} style={{ background: 'none', border: 'none' }}>
                     <HelpCircle size={14} className="me-2" /> Help
                   </button>
-                 <button
-  onClick={onLogout}
-  className="btn btn-outline-danger w-100 text-start"
-  style={{ border: 'none' }}
->
-  <LogOut size={14} className="me-2" /> Logout
-</button>
+                  <button
+                    onClick={onLogout}
+                    className="btn btn-outline-danger w-100 text-start"
+                    style={{ border: 'none' }}
+                  >
+                    <LogOut size={14} className="me-2" /> Logout
+                  </button>
                 </div>
               </div>
             )}

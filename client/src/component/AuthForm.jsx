@@ -25,6 +25,8 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetInfo, setResetInfo] = useState({ show: false, email: null, token: null });
 
+  const [theme, setTheme] = useState(darkMode ? "dark" : "light"); // manage system/light/dark toggle
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const emailParam = params.get('email');
@@ -43,17 +45,12 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
     if (rememberedUser) {
       try {
         const user = JSON.parse(rememberedUser);
-        // Find the full user object from localStorage.chatapp_users
         const users = JSON.parse(localStorage.getItem('chatapp_users')) || [];
         const foundUser = users.find(u => u.id === user.id && u.email === user.email);
 
         if (foundUser) {
-          // If a remembered user exists and is found in the users list,
-          // automatically call onLogin to set the user state in the parent component.
-          // This simulates a login on refresh.
           onLogin(foundUser);
         } else {
-          // If remembered user data is invalid or not found, clear it.
           localStorage.removeItem('chatapp_remember_user');
         }
       } catch (e) {
@@ -61,8 +58,18 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
         localStorage.removeItem('chatapp_remember_user');
       }
     }
-  }, [onLogin]); // Depend on onLogin to ensure it's stable
+  }, [onLogin]);
 
+  // --- FULL BODY DARK/LIGHT MODE HANDLER ---
+  useEffect(() => {
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    let shouldBeDark = darkMode;
+    if (theme === "system") shouldBeDark = systemPrefersDark;
+    else if (theme === "dark") shouldBeDark = true;
+    else if (theme === "light") shouldBeDark = false;
+
+    document.body.className = shouldBeDark ? "bg-dark text-white" : "bg-light text-dark";
+  }, [theme, darkMode]);
 
   const handleResetComplete = () => {
     window.location.href = "/";
@@ -107,9 +114,7 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
 
     setSuccess('🎉 Account created successfully! Redirecting to login...');
     setIsLoading(false);
-    setTimeout(() => {
-  onLogin(newUser);
-}, 1500);
+    setTimeout(() => { onLogin(newUser); }, 1500);
 
     setTimeout(() => {
       setIsLoginView(true);
@@ -134,7 +139,6 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
       const updatedUsers = users.map(user => user.id === foundUser.id ? foundUser : user);
       localStorage.setItem('chatapp_users', JSON.stringify(updatedUsers));
       if (rememberMe) {
-        // Store minimal, non-sensitive user info for remembering
         localStorage.setItem('chatapp_remember_user', JSON.stringify({ email: foundUser.email, id: foundUser.id }));
       } else {
         localStorage.removeItem('chatapp_remember_user');
@@ -181,15 +185,11 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
         } else {
           setSuccess(`✅ Welcome back, ${existingUser.name || existingUser.username}!`);
           existingUser.lastLogin = new Date().toISOString();
-          // Update the existing user in localStorage.chatapp_users
           localStorage.setItem('chatapp_users', JSON.stringify(users.map(u => u.id === existingUser.id ? existingUser : u)));
           userToLogin = existingUser;
         }
-        // For social logins, you might want to automatically remember them
-        // or offer a specific "remember me" checkbox. For now, we'll
-        // assume they are remembered by default or if the rememberMe checkbox is checked.
-        if (rememberMe || !isLoginView) { // if signup (which google is part of) or rememberme is checked
-           localStorage.setItem('chatapp_remember_user', JSON.stringify({ email: userToLogin.email, id: userToLogin.id }));
+        if (rememberMe || !isLoginView) {
+          localStorage.setItem('chatapp_remember_user', JSON.stringify({ email: userToLogin.email, id: userToLogin.id }));
         }
 
         setTimeout(() => {
@@ -216,7 +216,6 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
     const users = JSON.parse(localStorage.getItem('chatapp_users')) || [];
     if (!users.some(u => u.provider === provider)) { users.push(socialUser); localStorage.setItem('chatapp_users', JSON.stringify(users)); }
 
-    // Remember social login users as well
     localStorage.setItem('chatapp_remember_user', JSON.stringify({ email: socialUser.email, id: socialUser.id }));
 
     setTimeout(() => { onLogin(socialUser); }, 1500);
@@ -243,7 +242,7 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
     if (rememberedUser && isLoginView) {
       try {
         const user = JSON.parse(rememberedUser);
-        setEmail(user.email); // Only pre-fill email, not the whole user
+        setEmail(user.email);
         setRememberMe(true);
       } catch (e) {
         console.error("Error parsing remembered user for pre-fill:", e);
@@ -253,8 +252,7 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
       setEmail('');
       setRememberMe(false);
     }
-  }, [isLoginView]); // Dependency on isLoginView to re-check when switching views
-
+  }, [isLoginView]);
 
   const getPasswordStrength = (password) => {
     if (!password) return { score: 0, label: '', color: '' };
@@ -279,7 +277,8 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
 
   return (
     <>
-      <div className={"min-vh-100 d-flex align-items-center justify-content-center gradient-bg"}>
+    <div className="d-flex align-items-center justify-content-center gradient-bg" style={{ minHeight: '100vh',padding: "20px",boxSizing: "border-box", overflow: 'hidden' }}>
+
         <div className="container-fluid">
           <div className="row justify-content-center">
             <div className="col-lg-6 d-none d-lg-flex align-items-center justify-content-center">
@@ -292,13 +291,19 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
               </div>
             </div>
             <div className="col-lg-6 col-md-8 col-sm-10">
-              <motion.div initial={{ x: 50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}
-                className={`p-5 shadow-lg rounded-4 ${darkMode ? 'bg-dark text-white' : 'bg-white'}`} style={{ maxWidth: '500px', margin: '0 auto' }}>
-                <div className="text-end mb-3">
-                  <button onClick={toggleDarkMode} className={`btn btn-sm rounded-3 ${darkMode ? 'btn-outline-light' : 'btn-outline-secondary'}`}>
-                    {darkMode ? <Sun size={16} /> : <Moon size={16} />}
-                  </button>
-                </div>
+              <motion.div
+  initial={{ x: 50, opacity: 0 }}
+  animate={{ x: 0, opacity: 1 }}
+  transition={{ duration: 0.5, delay: 0.2 }}
+  className={`p-4 shadow-lg rounded-4 ${darkMode ? 'bg-dark text-white' : 'bg-white'}`}
+  style={{
+    width: "100%",
+    maxWidth: '420px',
+    maxHeight: '92vh',      
+    overflow: "hidden"       
+  }}
+>
+
                 <div className="d-flex mb-4 rounded-3 p-1" style={{ backgroundColor: darkMode ? '#333' : '#f8f9fa' }}>
                   <button className={`btn flex-fill rounded-3 fw-semibold ${isLoginView ? 'btn-primary text-white' : (darkMode ? 'text-white' : 'text-dark')}`} style={{ background: isLoginView ? 'linear-gradient(to right, #3b82f6, #8b5cf6)' : 'none', border: 'none' }} onClick={() => switchView('login')}>LOG IN</button>
                   <button className={`btn flex-fill rounded-3 fw-semibold ${!isLoginView ? 'btn-primary text-white' : (darkMode ? 'text-white' : 'text-dark')}`} style={{ background: !isLoginView ? 'linear-gradient(to right, #3b82f6, #8b5cf6)' : 'none', border: 'none' }} onClick={() => switchView('signup')}>SIGN UP</button>

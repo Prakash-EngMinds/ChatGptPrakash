@@ -139,7 +139,7 @@ const UpgradePlan = ({ darkMode, onClose, onUpgradeSuccess }) => {
     </div>
     <ul className="list-unstyled">
       <li>
-        <Check className="me-2 text-success" /> Access to GPT-3.5
+        <Check className="me-2 text-success" /> Access to QuantumChat-3.5
       </li>
       <li>
         <Check className="me-2 text-success" /> Standard response speed
@@ -176,7 +176,7 @@ const UpgradePlan = ({ darkMode, onClose, onUpgradeSuccess }) => {
                           <small>per month</small>
                         </div>
                         <ul>
-                          <li><Check className="me-2" /> Access GPT-4</li>
+                          <li><Check className="me-2" /> Access QuantumChat-4</li>
                           <li><Check className="me-2" /> Faster response speed</li>
                           <li><Check className="me-2" /> Priority support</li>
                           <li><Check className="me-2" /> Advanced customization</li>

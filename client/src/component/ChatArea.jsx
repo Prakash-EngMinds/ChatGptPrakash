@@ -157,9 +157,8 @@ export default function ChatArea({
     >
       {/* HEADER */}
       <div
-        className={`d-flex align-items-center p-3 shadow border-bottom ${
-          darkMode ? "bg-dark border-dark" : "bg-white"
-        }`}
+        className={`d-flex align-items-center p-3 shadow border-bottom ${darkMode ? "bg-dark border-dark" : "bg-white"
+          }`}
         style={{ width: "100%" }}
       >
         <div
@@ -219,9 +218,8 @@ export default function ChatArea({
         >
           <button
             onClick={toggleDarkMode}
-            className={`btn rounded-3 ${
-              darkMode ? "btn-outline-light" : "btn-outline-secondary"
-            }`}
+            className={`btn rounded-3 ${darkMode ? "btn-outline-light" : "btn-outline-secondary"
+              }`}
           >
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
@@ -261,9 +259,8 @@ export default function ChatArea({
                 }}
                 placeholder="Type your message..."
                 disabled={isLoading}
-                className={`form-control rounded-3 ${
-                  darkMode ? "bg-dark text-white border-secondary" : ""
-                }`}
+                className={`form-control rounded-3 ${darkMode ? "bg-dark text-white border-secondary" : ""
+                  }`}
                 style={{ width: "100%" }}
                 autoFocus
               />
@@ -304,15 +301,14 @@ export default function ChatArea({
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className={`p-3 rounded-4 shadow-sm mb-3 ${
-                    msg.role === "user"
+                  className={`p-3 rounded-4 shadow-sm mb-3 ${msg.role === "user"
                       ? "ms-auto text-white"
                       : msg.isError
-                      ? "bg-danger bg-opacity-10 border border-danger"
-                      : darkMode
-                      ? "bg-dark text-white border border-secondary"
-                      : "bg-light"
-                  }`}
+                        ? "bg-danger bg-opacity-10 border border-danger"
+                        : darkMode
+                          ? "bg-dark text-white border border-secondary"
+                          : "bg-light"
+                    }`}
                   style={{
                     maxWidth: "80%",
                     background: darkMode ? "#666" : "#8e9296ff",
@@ -353,15 +349,14 @@ export default function ChatArea({
                     {msg.isStreaming && <span className="typing-cursor">|</span>}
                   </div>
                   <div
-                    className={`small mt-1 ${
-                      msg.role === "user"
+                    className={`small mt-1 ${msg.role === "user"
                         ? "text-white-50"
                         : msg.isError
-                        ? "text-danger"
-                        : darkMode
-                        ? "text-light opacity-75"
-                        : "text-muted"
-                    }`}
+                          ? "text-danger"
+                          : darkMode
+                            ? "text-light opacity-75"
+                            : "text-muted"
+                      }`}
                   >
                     {msg.time}
                     {msg.isError ? " • Error" : ""}
@@ -371,49 +366,44 @@ export default function ChatArea({
                     <div className="d-flex gap-2 mt-2 flex-wrap">
                       <button
                         onClick={() => copyToClipboard(msg.text, msgId)}
-                        className={`btn btn-sm ${
-                          darkMode ? "btn-outline-light" : "btn-outline-secondary"
-                        }`}
+                        className={`btn btn-sm ${darkMode ? "btn-outline-light" : "btn-outline-secondary"
+                          }`}
                       >
                         {copiedStates[msgId] ? "Copied!" : <Copy size={14} />}
                       </button>
                       <button
                         onClick={() => toggleLike(msgId)}
-                        className={`btn btn-sm ${
-                          likedStates[msgId]
+                        className={`btn btn-sm ${likedStates[msgId]
                             ? "btn-primary"
                             : darkMode
-                            ? "btn-outline-light"
-                            : "btn-outline-secondary"
-                        }`}
+                              ? "btn-outline-light"
+                              : "btn-outline-secondary"
+                          }`}
                       >
                         <ThumbsUp size={14} />
                       </button>
                       <button
                         onClick={() => toggleDislike(msgId)}
-                        className={`btn btn-sm ${
-                          dislikedStates[msgId]
+                        className={`btn btn-sm ${dislikedStates[msgId]
                             ? "btn-danger"
                             : darkMode
-                            ? "btn-outline-light"
-                            : "btn-outline-secondary"
-                        }`}
+                              ? "btn-outline-light"
+                              : "btn-outline-secondary"
+                          }`}
                       >
                         <ThumbsDown size={14} />
                       </button>
                       <button
                         onClick={() => handleShare(msg.text)}
-                        className={`btn btn-sm ${
-                          darkMode ? "btn-outline-light" : "btn-outline-secondary"
-                        }`}
+                        className={`btn btn-sm ${darkMode ? "btn-outline-light" : "btn-outline-secondary"
+                          }`}
                       >
                         <Send size={14} />
                       </button>
                       <button
                         onClick={() => handleReadAloud(msgId, msg.text)}
-                        className={`btn btn-sm ${
-                          darkMode ? "btn-outline-light" : "btn-outline-secondary"
-                        }`}
+                        className={`btn btn-sm ${darkMode ? "btn-outline-light" : "btn-outline-secondary"
+                          }`}
                       >
                         {speakingStates[msgId] ? (
                           <VolumeX size={14} />
@@ -430,9 +420,8 @@ export default function ChatArea({
                           setEditingMsgId(msgId);
                           setEditText(msg.text);
                         }}
-                        className={`btn btn-sm ${
-                          darkMode ? "btn-outline-light" : "btn-outline-light"
-                        }`}
+                        className={`btn btn-sm ${darkMode ? "btn-outline-light" : "btn-outline-light"
+                          }`}
                       >
                         <Edit3 size={14} /> Edit
                       </button>
@@ -461,15 +450,13 @@ export default function ChatArea({
           {messages.length > 0 && isScrollable && showScrollDown && (
             <motion.button
               onClick={scrollToBottom}
-              className={`btn rounded-circle shadow ${
-                darkMode ? "btn-light text-dark" : "btn-dark text-white"
-              }`}
+              className={`btn rounded-circle shadow ${darkMode ? "btn-light text-dark" : "btn-dark text-white"
+                }`}
               style={{
                 position: "fixed",
                 bottom: "70px",
-                left: `calc(${sidebarCollapsed ? "60px" : "280px"} + (100% - ${
-                  sidebarCollapsed ? "60px" : "280px"
-                })/2)`,
+                left: `calc(${sidebarCollapsed ? "60px" : "280px"} + (100% - ${sidebarCollapsed ? "60px" : "280px"
+                  })/2)`,
                 transform: "translateX(-50%)",
                 width: "40px",
                 height: "40px",
@@ -488,9 +475,8 @@ export default function ChatArea({
 
           {/* Input at bottom */}
           <div
-            className={`p-3 border-top ${
-              darkMode ? "bg-dark border-dark" : "bg-white"
-            }`}
+            className={`p-3 border-top ${darkMode ? "bg-dark border-dark" : "bg-white"
+              }`}
             style={{
               display: "flex",
               justifyContent: "center",
@@ -510,9 +496,8 @@ export default function ChatArea({
                   }}
                   placeholder="Type your message..."
                   disabled={isLoading}
-                  className={`form-control rounded-3 ${
-                    darkMode ? "bg-dark text-white border-secondary" : ""
-                  }`}
+                  className={`form-control rounded-3 ${darkMode ? "bg-dark text-white border-secondary" : ""
+                    }`}
                   style={{ width: "100%" }}
                   autoFocus
                 />

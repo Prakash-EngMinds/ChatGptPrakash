@@ -24,8 +24,23 @@ export default function ChatApp({ user, onLogout }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showUpgradePlan, setShowUpgradePlan] = useState(false);
-  const [currentPlan, setCurrentPlan] = useState("Free Plan");
+  // const [currentPlan, setCurrentPlan] = useState("Free Plan");
   const [theme, setTheme] = useState("system");
+
+  const PLAN_STORAGE_KEY = "current_plan";
+
+  const [currentPlan, setCurrentPlan] = useState(() => {
+    try {
+      return localStorage.getItem(PLAN_STORAGE_KEY) || "Free";
+    } catch {
+      return "Free";
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem(PLAN_STORAGE_KEY, currentPlan);
+  }, [currentPlan]);
+
 
   const [chats, setChats] = useState(() => {
     try {
@@ -202,8 +217,8 @@ export default function ChatApp({ user, onLogout }) {
             if (c.id !== chatId) return c;
             const msgs = c.messages
               ? c.messages.map((m) =>
-                  m.isStreaming ? { ...m, text: fallback, isStreaming: false } : m
-                )
+                m.isStreaming ? { ...m, text: fallback, isStreaming: false } : m
+              )
               : [{ role: "assistant", text: fallback, time: nowTime() }];
             return { ...c, messages: msgs };
           })

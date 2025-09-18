@@ -14,12 +14,12 @@ const STORAGE_KEY = "chat_history_v1";
 
 const SettingsPanel = ({
   isOpen = true,
-  onClose = () => {},
+  onClose = () => { },
   darkMode = false,
   theme = "system",
-  setTheme = () => {},
+  setTheme = () => { },
   currentUser = { name: "John Doe", email: "john@example.com" },
-  onSettingsChange = () => {},
+  onSettingsChange = () => { },
   chats = undefined, // optional: if provided, will be used as source of truth
   onRestoreChat = undefined, // optional callback
   onPermanentlyDeleteChat = undefined // optional callback
@@ -496,12 +496,22 @@ const SettingsPanel = ({
 
                 {archivedChats.length > 0 && (
                   <div className="archive-actions">
-                    <button className="btn secondary" onClick={handleRestoreAll}>
+                    <button
+                      className="btn secondary"
+                      onClick={handleRestoreAll}
+                      style={{ color: '#0d6efd' }} // unique blue text, always visible
+                    >
                       <RotateCcw size={14} /> Restore All
                     </button>
-                    <button className="btn danger" onClick={handleDeleteAll}>
+
+                    <button
+                      className="btn danger"
+                      onClick={handleDeleteAll}
+                      style={{ color: '#dc3545' }} // unique red text, always visible
+                    >
                       <Trash2 size={14} /> Delete All
                     </button>
+
                   </div>
                 )}
               </div>
