@@ -25,9 +25,17 @@ export default function ChatApp({ user, onLogout }) {
   const [showSettings, setShowSettings] = useState(false);
   const [showUpgradePlan, setShowUpgradePlan] = useState(false);
   // const [currentPlan, setCurrentPlan] = useState("Free Plan");
-  const [theme, setTheme] = useState("system");
 
   const PLAN_STORAGE_KEY = "current_plan";
+  const THEME_STORAGE_KEY = "chat_theme"; // new key for theme persistence
+
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem(THEME_STORAGE_KEY) || "system";
+    } catch {
+      return "system";
+    }
+  });
 
   const [currentPlan, setCurrentPlan] = useState(() => {
     try {
@@ -41,6 +49,9 @@ export default function ChatApp({ user, onLogout }) {
     localStorage.setItem(PLAN_STORAGE_KEY, currentPlan);
   }, [currentPlan]);
 
+  useEffect(() => {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
 
   const [chats, setChats] = useState(() => {
     try {

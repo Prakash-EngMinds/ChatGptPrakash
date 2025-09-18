@@ -91,6 +91,16 @@ const SettingsPanel = ({
     return getDefaultSettings();
   });
 
+  // Keep settings.appearance.theme in sync with incoming `theme` prop from parent
+  useEffect(() => {
+    setSettings((prev) => {
+      const incoming = theme || "system";
+      if (prev?.appearance?.theme === incoming) return prev;
+      return { ...prev, appearance: { ...prev.appearance, theme: incoming } };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [theme]);
+
   const [expandedSections, setExpandedSections] = useState({
     appearance: true,
     customInstructions: false,

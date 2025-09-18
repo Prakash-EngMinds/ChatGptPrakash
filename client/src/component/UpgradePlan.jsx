@@ -276,7 +276,7 @@ const UpgradePlan = ({ darkMode, onClose, onUpgradeSuccess }) => {
                           <button type="submit" className="btn btn-primary btn-lg" disabled={isProcessing}>
                             {isProcessing ? "Processing..." : "Pay ₹1,299"}
                           </button>
-                          <button type="button" className="btn btn-link text-muted" onClick={() => setShowPayment(false)}>
+                          <button type="button" className="btn btn-link text-success" onClick={() => setShowPayment(false)}>
                             ← Back to plans
                           </button>
                         </div>
