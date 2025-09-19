@@ -49,19 +49,8 @@ export default function ChatArea({
       .replace(/\[([^\]]+)\]\([^\)]+\)/g, "$1");
   };
 
-  const copyToClipboard = async (text, msgId) => {
-    try {
-      const cleanText = stripMarkdown(text);
-      await navigator.clipboard.writeText(cleanText);
-      setCopiedStates((prev) => ({ ...prev, [msgId]: true }));
-      setTimeout(
-        () => setCopiedStates((prev) => ({ ...prev, [msgId]: false })),
-        2000
-      );
-    } catch (err) {
-      console.error("Copy failed:", err);
-    }
-  };
+  //---- Clipboard ----//
+  
 
   const toggleLike = (msgId) => {
     setLikedStates((prev) => ({ ...prev, [msgId]: !prev[msgId] }));
@@ -88,26 +77,7 @@ export default function ChatArea({
     }
   };
 
-  const handleReadAloud = (msgId, msgText) => {
-    if (speakingStates[msgId]) {
-      synthRef.current.cancel();
-      setSpeakingStates((prev) => ({ ...prev, [msgId]: false }));
-      return;
-    }
-
-    const utterance = new SpeechSynthesisUtterance(stripMarkdown(msgText));
-    utterance.onend = () => {
-      setSpeakingStates((prev) => ({ ...prev, [msgId]: false }));
-    };
-
-    synthRef.current.cancel();
-    synthRef.current.speak(utterance);
-    setSpeakingStates((prev) => ({ ...prev, [msgId]: true }));
-  };
-
-  useEffect(() => {
-    return () => synthRef.current.cancel();
-  }, []);
+  //---- Text-to-Speech ----//
 
   const handleSuggestedClick = (text) => onSendMessage(text);
 
@@ -364,13 +334,9 @@ export default function ChatArea({
                   </div>
                   {isAssistant && !msg.isStreaming && (
                     <div className="d-flex gap-2 mt-2 flex-wrap">
-                      <button
-                        onClick={() => copyToClipboard(msg.text, msgId)}
-                        className={`btn btn-sm ${darkMode ? "btn-outline-light" : "btn-outline-secondary"
-                          }`}
-                      >
-                        {copiedStates[msgId] ? "Copied!" : <Copy size={14} />}
-                      </button>
+                     
+
+
                       <button
                         onClick={() => toggleLike(msgId)}
                         className={`btn btn-sm ${likedStates[msgId]
@@ -400,17 +366,9 @@ export default function ChatArea({
                       >
                         <Send size={14} />
                       </button>
-                      <button
-                        onClick={() => handleReadAloud(msgId, msg.text)}
-                        className={`btn btn-sm ${darkMode ? "btn-outline-light" : "btn-outline-secondary"
-                          }`}
-                      >
-                        {speakingStates[msgId] ? (
-                          <VolumeX size={14} />
-                        ) : (
-                          <Volume2 size={14} />
-                        )}
-                      </button>
+                      
+
+
                     </div>
                   )}
                   {msg.role === "user" && editingMsgId !== msgId && (
@@ -446,33 +404,11 @@ export default function ChatArea({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* ✅ Down Arrow only if scrollable and NOT at bottom */}
-          {messages.length > 0 && isScrollable && showScrollDown && (
-            <motion.button
-              onClick={scrollToBottom}
-              className={`btn rounded-circle shadow ${darkMode ? "btn-light text-dark" : "btn-dark text-white"
-                }`}
-              style={{
-                position: "fixed",
-                bottom: "70px",
-                left: `calc(${sidebarCollapsed ? "60px" : "280px"} + (100% - ${sidebarCollapsed ? "60px" : "280px"
-                  })/2)`,
-                transform: "translateX(-50%)",
-                width: "40px",
-                height: "40px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 1000,
-              }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <ArrowDown size={20} />
-            </motion.button>
-          )}
+          {/*  Down Arrow only if scrollable and NOT at bottom will be impalement */}
 
+
+
+         
           {/* Input at bottom */}
           <div
             className={`p-3 border-top ${darkMode ? "bg-dark border-dark" : "bg-white"
