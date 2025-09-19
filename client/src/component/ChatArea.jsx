@@ -512,12 +512,12 @@ export default function ChatArea({
                         className="btn btn-sm btn-danger"
                         style={{
                           borderRadius: "50%",
-                          padding: "3px",
+                          padding: "9px",
                           marginLeft: "2px",
                         }}
                         title="Cancel"
                       >
-                        <X size={16} />
+                        <X size={24} />
                       </button>
                     </>
                   ) : (

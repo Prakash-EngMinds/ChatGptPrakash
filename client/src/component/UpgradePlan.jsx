@@ -122,37 +122,37 @@ const UpgradePlan = ({ darkMode, onClose, onUpgradeSuccess }) => {
                   {/* Free Plan */}
                   <div className="col-12 col-md-6">
                     <motion.div
-  whileHover={{ y: -4 }}
-  className="card h-100 border-0 rounded-4"
-  style={{
-    background: "#fff", // Always white
-    color: "#212529",   // Always dark text
-    boxShadow: "0 0.125rem 0.25rem rgb(0 0 0 / 0.075)",
-  }}
->
-  <div className="card-body">
-    <h4 style={{ color: "#212529" }}>Free</h4>
-    <p style={{ color: "#6c757d" }}>For casual use</p>
-    <div className="my-4">
-      <h2 style={{ color: "#212529" }}>₹0</h2>
-      <small style={{ color: "#6c757d" }}>forever</small>
-    </div>
-    <ul className="list-unstyled">
-      <li>
-        <Check className="me-2 text-success" /> Access to QuantumChat-3.5
-      </li>
-      <li>
-        <Check className="me-2 text-success" /> Standard response speed
-      </li>
-      <li>
-        <Check className="me-2 text-success" /> Limited features
-      </li>
-    </ul>
-    <button className="btn btn-outline-primary w-100" disabled>
-      Current Plan
-    </button>
-  </div>
-</motion.div>
+                      whileHover={{ y: -4 }}
+                      className="card h-100 border-0 rounded-4"
+                      style={{
+                        background: "#fff", // Always white
+                        color: "#212529",   // Always dark text
+                        boxShadow: "0 0.125rem 0.25rem rgb(0 0 0 / 0.075)",
+                      }}
+                    >
+                      <div className="card-body">
+                        <h4 style={{ color: "#212529" }}>Free</h4>
+                        <p style={{ color: "#6c757d" }}>For casual use</p>
+                        <div className="my-4">
+                          <h2 style={{ color: "#212529" }}>₹0</h2>
+                          <small style={{ color: "#6c757d" }}>forever</small>
+                        </div>
+                        <ul className="list-unstyled">
+                          <li>
+                            <Check className="me-2 text-success" /> Access to QuantumChat-3.5
+                          </li>
+                          <li>
+                            <Check className="me-2 text-success" /> Standard response speed
+                          </li>
+                          <li>
+                            <Check className="me-2 text-success" /> Limited features
+                          </li>
+                        </ul>
+                        <button className="btn btn-outline-primary w-100" disabled>
+                          Current Plan
+                        </button>
+                      </div>
+                    </motion.div>
 
                   </div>
 

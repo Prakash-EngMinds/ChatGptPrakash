@@ -104,20 +104,21 @@ export default function Sidebar({
   };
 
   return (
-    <div
-      className={`d-flex flex-column shadow ${darkMode ? '#1E2022 text-white' : 'bg-white text-dark'}`}
-      style={{
-        // backgroundColor: "#1E2022",
-        width: sidebarWidth,
-        borderRight: `1px solid ${darkMode ? '#333' : 'var(--bs-border-color)'}`,
-        height: '100vh',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        zIndex: 1000,
-        transition: 'width 0.3s ease-in-out',
-      }}
-    >
+   <div
+  className={`d-flex flex-column shadow ${darkMode ? 'text-white' : 'bg-white text-dark'}`}
+  style={{
+    backgroundColor: darkMode ? '#1E2022' : '#ffffff', // ✅ Correct background
+    width: sidebarWidth,
+    borderRight: `1px solid ${darkMode ? '#333' : 'var(--bs-border-color)'}`,
+    height: '100vh',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    zIndex: 1000, // ✅ ensure it overlays body
+    transition: 'width 0.3s ease-in-out',
+  }}
+>
+
       {/* Header */}
       <div
         className={`d-flex align-items-center justify-content-between p-3 ${darkMode ? 'border-bottom border-dark' : 'border-bottom'}`}
@@ -163,7 +164,7 @@ export default function Sidebar({
             <button
               onClick={onNewChat}
               className="btn text-white w-100 mb-3 rounded-3 d-flex align-items-center justify-content-center gap-2"
-              style={{ background: 'linear-gradient(to right, #3b82f6, #8b5cf6)', border: 'none' }}
+              style={{ background: 'linear-gradient(to right, #3b82f6, #827e8aff)', border: 'none' }}
             >
               <Plus size={16} /> New Chat
             </button>
@@ -382,8 +383,9 @@ export default function Sidebar({
                   <User size={16} />
                 </div>
                 <div className="d-flex align-items-center gap-2">
-                  <div className="fw-semibold small">{currentUser?.name || currentUser?.username || "User"}</div>
-
+<div className="fw-semibold small">
+  {(currentUser?.name || currentUser?.username || "User").split(" ")[0]}
+</div>
                   {currentPlan === "Free" && (
                     <small className={darkMode ? 'text-success' : 'text-muted'}>
                       {currentPlan} Plan

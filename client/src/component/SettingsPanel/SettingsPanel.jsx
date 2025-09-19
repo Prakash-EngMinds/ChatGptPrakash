@@ -314,19 +314,7 @@ const SettingsPanel = ({
                     >
                       Dark
                     </button>
-                    <button
-                      className={`btn ${settings.appearance.theme === 'system' ? 'primary' : 'secondary'}`}
-                      onClick={() => handleThemeChange('system')}
-                      style={{
-                        backgroundColor: settings.appearance.theme === 'system' ? '#007bff' : '#6c757d',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '6px 12px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      System
-                    </button>
+                   
                   </div>
                 </div>
               </div>
