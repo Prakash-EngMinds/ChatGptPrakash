@@ -50,7 +50,20 @@ export default function ChatArea({
   };
 
   //---- Clipboard ----//
-  
+  const copyToClipboard = async (text, msgId) => {
+    try {
+      const cleanText = stripMarkdown(text);
+      await navigator.clipboard.writeText(cleanText);
+      setCopiedStates((prev) => ({ ...prev, [msgId]: true }));
+      setTimeout(
+        () => setCopiedStates((prev) => ({ ...prev, [msgId]: false })),
+        2000
+      );
+    } catch (err) {
+      console.error("Copy failed:", err);
+    }
+  };
+
 
   const toggleLike = (msgId) => {
     setLikedStates((prev) => ({ ...prev, [msgId]: !prev[msgId] }));
@@ -78,6 +91,40 @@ export default function ChatArea({
   };
 
   //---- Text-to-Speech ----//
+  const handleReadAloud = (msgId, msgText) => {
+
+    if (speakingStates[msgId]) {
+
+      synthRef.current.cancel();
+
+      setSpeakingStates((prev) => ({ ...prev, [msgId]: false }));
+
+      return;
+
+    }
+
+    const utterance = new SpeechSynthesisUtterance(stripMarkdown(msgText));
+
+    utterance.onend = () => {
+
+      setSpeakingStates((prev) => ({ ...prev, [msgId]: false }));
+
+    };
+
+    synthRef.current.cancel();
+
+    synthRef.current.speak(utterance);
+
+    setSpeakingStates((prev) => ({ ...prev, [msgId]: true }));
+
+  };
+
+  useEffect(() => {
+
+    return () => synthRef.current.cancel();
+
+  }, []);
+
 
   const handleSuggestedClick = (text) => onSendMessage(text);
 
@@ -272,12 +319,12 @@ export default function ChatArea({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                   className={`p-3 rounded-4 shadow-sm mb-3 ${msg.role === "user"
-                      ? "ms-auto text-white"
-                      : msg.isError
-                        ? "bg-danger bg-opacity-10 border border-danger"
-                        : darkMode
-                          ? "bg-dark text-white border border-secondary"
-                          : "bg-light"
+                    ? "ms-auto text-white"
+                    : msg.isError
+                      ? "bg-danger bg-opacity-10 border border-danger"
+                      : darkMode
+                        ? "bg-dark text-white border border-secondary"
+                        : "bg-light"
                     }`}
                   style={{
                     maxWidth: "80%",
@@ -320,12 +367,12 @@ export default function ChatArea({
                   </div>
                   <div
                     className={`small mt-1 ${msg.role === "user"
-                        ? "text-white-50"
-                        : msg.isError
-                          ? "text-danger"
-                          : darkMode
-                            ? "text-light opacity-75"
-                            : "text-muted"
+                      ? "text-white-50"
+                      : msg.isError
+                        ? "text-danger"
+                        : darkMode
+                          ? "text-light opacity-75"
+                          : "text-muted"
                       }`}
                   >
                     {msg.time}
@@ -334,16 +381,23 @@ export default function ChatArea({
                   </div>
                   {isAssistant && !msg.isStreaming && (
                     <div className="d-flex gap-2 mt-2 flex-wrap">
-                     
+                      <button
+                        onClick={() => copyToClipboard(msg.text, msgId)}
+                        className={`btn btn-sm ${darkMode ? "btn-outline-light" : "btn-outline-secondary"
+                          }`}
+                      >
+                        {copiedStates[msgId] ? "Copied!" : <Copy size={14} />}
+                      </button>
+
 
 
                       <button
                         onClick={() => toggleLike(msgId)}
                         className={`btn btn-sm ${likedStates[msgId]
-                            ? "btn-primary"
-                            : darkMode
-                              ? "btn-outline-light"
-                              : "btn-outline-secondary"
+                          ? "btn-primary"
+                          : darkMode
+                            ? "btn-outline-light"
+                            : "btn-outline-secondary"
                           }`}
                       >
                         <ThumbsUp size={14} />
@@ -351,10 +405,10 @@ export default function ChatArea({
                       <button
                         onClick={() => toggleDislike(msgId)}
                         className={`btn btn-sm ${dislikedStates[msgId]
-                            ? "btn-danger"
-                            : darkMode
-                              ? "btn-outline-light"
-                              : "btn-outline-secondary"
+                          ? "btn-danger"
+                          : darkMode
+                            ? "btn-outline-light"
+                            : "btn-outline-secondary"
                           }`}
                       >
                         <ThumbsDown size={14} />
@@ -366,7 +420,19 @@ export default function ChatArea({
                       >
                         <Send size={14} />
                       </button>
-                      
+
+                      <button
+                        onClick={() => handleReadAloud(msgId, msg.text)}
+                        className={`btn btn-sm ${darkMode ? "btn-outline-light" : "btn-outline-secondary"
+                          }`}
+                      >
+                        {speakingStates[msgId] ? (
+                          <VolumeX size={14} />
+                        ) : (
+                          <Volume2 size={14} />
+                        )}
+                      </button>
+
 
 
                     </div>
@@ -408,7 +474,7 @@ export default function ChatArea({
 
 
 
-         
+
           {/* Input at bottom */}
           <div
             className={`p-3 border-top ${darkMode ? "bg-dark border-dark" : "bg-white"
