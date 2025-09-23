@@ -28,6 +28,7 @@ export default function ChatArea({
   isLoading = false,
   onCancelStream,
   chatTitle,
+  onNewChat
 }) {
   const [copiedStates, setCopiedStates] = useState({});
   const [likedStates, setLikedStates] = useState({});
@@ -109,6 +110,15 @@ export default function ChatArea({
     return () => synthRef.current.cancel();
   }, []);
 
+
+  const inputRef = useRef();
+
+useEffect(() => {
+  if (inputRef.current) {
+    inputRef.current.style.setProperty('--placeholder-color', darkMode ? 'cyan' : '#888');
+  }
+}, [darkMode]);
+
   const handleSuggestedClick = (text) => onSendMessage(text);
 
   const handleSaveEdit = (msgId) => {
@@ -136,7 +146,7 @@ export default function ChatArea({
     return () => {
       if (container) container.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [messages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -153,6 +163,7 @@ export default function ChatArea({
         width: "100%",
         position: "relative",
         height: "100vh",
+        
       }}
     >
       {/* HEADER */}
@@ -172,12 +183,13 @@ export default function ChatArea({
           {sidebarCollapsed && (
             <>
               <img
+              onClick={onNewChat}
                 src={gptIcon}
                 alt="ChatClone Logo"
-                style={{ width: "24px", height: "24px" }}
+                style={{ width: "24px", height: "24px",cursor: 'pointer' }}
               />
               <h2
-                className="h5 fw-bold mb-0 gradient-text"
+                className="h5 fw-bold mb-0 text-success"
                 style={{ marginLeft: 8 }}
               >
                 QuantumChat
@@ -228,6 +240,7 @@ export default function ChatArea({
 
       {/* Input Centered for New Chat */}
       {messages.length === 0 ? (
+
         <div
           style={{
             flexGrow: 1,
@@ -240,12 +253,21 @@ export default function ChatArea({
           <div
             style={{
               display: "flex",
+              flexDirection: "column",
               width: "70%",
               minWidth: 300,
               maxWidth: 800,
               justifyContent: "center",
+              alignItems: "center",
+              gap: "10px",
             }}
           >
+            {/* Agenda text */}
+            <h5 className="text-center" style={{ marginBottom: "8px" }}>
+              What’s your agenda today?
+            </h5>
+
+            {/* Input and button */}
             <div className="d-flex gap-2 align-items-center w-100">
               <input
                 value={message}
@@ -261,7 +283,11 @@ export default function ChatArea({
                 disabled={isLoading}
                 className={`form-control rounded-3 ${darkMode ? "bg-dark text-white border-secondary" : ""
                   }`}
-                style={{ width: "100%" }}
+                style={{
+                  width: "100%",
+                  color: darkMode ? "white" : "black",
+    '--placeholder-color': darkMode ? 'cyan' : '#888'
+                }}
                 autoFocus
               />
               <button
@@ -302,12 +328,12 @@ export default function ChatArea({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
                   className={`p-3 rounded-4 shadow-sm mb-3 ${msg.role === "user"
-                      ? "ms-auto text-white"
-                      : msg.isError
-                        ? "bg-danger bg-opacity-10 border border-danger"
-                        : darkMode
-                          ? "bg-dark text-white border border-secondary"
-                          : "bg-light"
+                    ? "ms-auto text-white"
+                    : msg.isError
+                      ? "bg-danger bg-opacity-10 border border-danger"
+                      : darkMode
+                        ? "bg-dark text-white border border-secondary"
+                        : "bg-light"
                     }`}
                   style={{
                     maxWidth: "80%",
@@ -350,12 +376,12 @@ export default function ChatArea({
                   </div>
                   <div
                     className={`small mt-1 ${msg.role === "user"
-                        ? "text-white-50"
-                        : msg.isError
-                          ? "text-danger"
-                          : darkMode
-                            ? "text-light opacity-75"
-                            : "text-muted"
+                      ? "text-white-50"
+                      : msg.isError
+                        ? "text-danger"
+                        : darkMode
+                          ? "text-light opacity-75"
+                          : "text-muted"
                       }`}
                   >
                     {msg.time}
@@ -374,10 +400,10 @@ export default function ChatArea({
                       <button
                         onClick={() => toggleLike(msgId)}
                         className={`btn btn-sm ${likedStates[msgId]
-                            ? "btn-primary"
-                            : darkMode
-                              ? "btn-outline-light"
-                              : "btn-outline-secondary"
+                          ? "btn-primary"
+                          : darkMode
+                            ? "btn-outline-light"
+                            : "btn-outline-secondary"
                           }`}
                       >
                         <ThumbsUp size={14} />
@@ -385,10 +411,10 @@ export default function ChatArea({
                       <button
                         onClick={() => toggleDislike(msgId)}
                         className={`btn btn-sm ${dislikedStates[msgId]
-                            ? "btn-danger"
-                            : darkMode
-                              ? "btn-outline-light"
-                              : "btn-outline-secondary"
+                          ? "btn-danger"
+                          : darkMode
+                            ? "btn-outline-light"
+                            : "btn-outline-secondary"
                           }`}
                       >
                         <ThumbsDown size={14} />
@@ -469,6 +495,7 @@ export default function ChatArea({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
+              
               <ArrowDown size={20} />
             </motion.button>
           )}

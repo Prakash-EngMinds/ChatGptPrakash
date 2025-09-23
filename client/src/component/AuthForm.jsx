@@ -29,6 +29,7 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    console.log("URL Parameters:", params.toString());
     const emailParam = params.get('email');
     const tokenParam = params.get('reset_token');
     if (emailParam && tokenParam) {
@@ -277,7 +278,7 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
 
   return (
     <>
-    <div className="d-flex align-items-center justify-content-center gradient-bg" style={{ minHeight: '100vh',padding: "20px",boxSizing: "border-box", overflow: 'hidden' }}>
+      <div className="d-flex align-items-center justify-content-center gradient-bg" style={{ minHeight: '100vh', padding: "20px", boxSizing: "border-box", overflow: 'hidden' }}>
 
         <div className="container-fluid">
           <div className="row justify-content-center">
@@ -292,17 +293,17 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
             </div>
             <div className="col-lg-6 col-md-8 col-sm-10">
               <motion.div
-  initial={{ x: 50, opacity: 0 }}
-  animate={{ x: 0, opacity: 1 }}
-  transition={{ duration: 0.5, delay: 0.2 }}
-  className={`p-4 shadow-lg rounded-4 ${darkMode ? 'bg-dark text-white' : 'bg-white'}`}
-  style={{
-    width: "100%",
-    maxWidth: '420px',
-    maxHeight: '92vh',      
-    overflow: "hidden"       
-  }}
->
+                initial={{ x: 50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className={`p-4 shadow-lg rounded-4 ${darkMode ? 'bg-dark text-white' : 'bg-white'}`}
+                style={{
+                  width: "100%",
+                  maxWidth: '420px',
+                  maxHeight: '92vh',
+                  overflow: "hidden"
+                }}
+              >
 
                 <div className="d-flex mb-4 rounded-3 p-1" style={{ backgroundColor: darkMode ? '#333' : '#f8f9fa' }}>
                   <button className={`btn flex-fill rounded-3 fw-semibold ${isLoginView ? 'btn-primary text-white' : (darkMode ? 'text-white' : 'text-dark')}`} style={{ background: isLoginView ? 'linear-gradient(to right, #3b82f6, #8b5cf6)' : 'none', border: 'none' }} onClick={() => switchView('login')}>LOG IN</button>

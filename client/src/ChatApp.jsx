@@ -356,6 +356,7 @@ export default function ChatApp({ user, onLogout }) {
             isLoading={isLoading}
             onCancelStream={handleCancelStream}
             chatTitle={currentChat?.title}
+            onNewChat={handleNewChat}
           />
           <SettingsPanel
             chats={chats}
