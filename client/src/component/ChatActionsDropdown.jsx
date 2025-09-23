@@ -78,18 +78,25 @@ export default function ChatActionsDropdown({
   };
 
   // --- updated: fixed copy link with chatId in URL ---
-  const handleCopyLink = () => {
+ const handleCopyLink = () => {
   try {
-    // Only include chatId parameter
-    const link = `${window.location.origin}/?chatId=${encodeURIComponent(chat.id)}`;
-    navigator.clipboard.writeText(link);
-    alert("Link copied to clipboard!");
+    if (!chat?.id) return;
+
+    // Generate link pointing to /chat with chatId
+    const link = `${window.location.origin}/chat?chatId=${encodeURIComponent(chat.id)}`;
+
+    navigator.clipboard.writeText(link)
+      .then(() => alert("Link copied to clipboard!"))
+      .catch(() => alert("Failed to copy link."));
+
   } catch (err) {
     console.error(err);
     alert("Failed to copy link.");
   }
+
   handleCloseDropdown();
 };
+
 
 
   const buttonStyle = (btnName) => ({
@@ -173,7 +180,8 @@ export default function ChatActionsDropdown({
           <input
             type="text"
             value={renameValue}
-            onChange={(e) => setRenameValue(e.target.value)}
+            maxLength={15} 
+            onChange={(e) => setRenameValue(e.target.value.slice(0, 15))}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 if (renameValue.trim()) onRename(chat.id, renameValue.trim());

@@ -4,6 +4,7 @@ import ChatArea from "./component/ChatArea";
 import SettingsPanel from "./component/SettingsPanel/SettingsPanel";
 import { generateGeminiStreamResponse, isGeminiConfigured } from "./services/geminiService";
 import UpgradePlan from "./component/UpgradePlan";
+import HelpModal from "./component/Help";
 
 const STORAGE_KEY = "chat_history_v1";
 
@@ -24,10 +25,10 @@ export default function ChatApp({ user, onLogout }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showUpgradePlan, setShowUpgradePlan] = useState(false);
-  // const [currentPlan, setCurrentPlan] = useState("Free Plan");
+  const [showHelp, setShowHelp] = useState(false);
 
   const PLAN_STORAGE_KEY = "current_plan";
-  const THEME_STORAGE_KEY = "chat_theme"; // new key for theme persistence
+  const THEME_STORAGE_KEY = "chat_theme";
 
   const [theme, setTheme] = useState(() => {
     try {
@@ -65,9 +66,66 @@ export default function ChatApp({ user, onLogout }) {
   const [activeChatId, setActiveChatId] = useState(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
   const [currentUser, setCurrentUser] = useState(user || { name: "User" });
   const isStreamingCancelled = useRef(false);
+
+  // ---------------- URL-based Settings Panel ----------------
+  useEffect(() => {
+    // Open SettingsPanel if URL is /settings
+    if (window.location.pathname === "/settings") {
+      setShowSettings(true);
+    }
+  }, []);
+
+  const openSettings = () => {
+    setShowSettings(true);
+    window.history.pushState(null, "", "/settings");
+  };
+
+  const closeSettings = () => {
+    setShowSettings(false);
+    window.history.pushState(null, "", "/");
+  };
+  // ---------------------------------------------------------
+
+  // ---------------- URL-based Upgrade Plan ----------------
+useEffect(() => {
+  // Open UpgradePlan if URL is /upgrade
+  if (window.location.pathname === "/upgrade") {
+    setShowUpgradePlan(true);
+  }
+}, []);
+
+const openUpgradePlan = () => {
+  setShowUpgradePlan(true);
+  window.history.pushState(null, "", "/upgrade");
+};
+
+const closeUpgradePlan = () => {
+  setShowUpgradePlan(false);
+  window.history.pushState(null, "", "/");
+};
+// ---------------------------------------------------------
+
+// ---------------- URL-based Help Panel ----------------
+useEffect(() => {
+  if (window.location.pathname === "/help") {
+    setShowHelp(true);
+  }
+}, []);
+
+const openHelp = () => {
+  setShowHelp(true);
+  window.history.pushState(null, "", "/help");
+};
+
+const closeHelp = () => {
+  setShowHelp(false);
+  window.history.pushState(null, "", "/");
+};
+// ---------------------------------------------------------
+
+
 
   useEffect(() => {
     if (user) setCurrentUser(user);
@@ -106,7 +164,6 @@ export default function ChatApp({ user, onLogout }) {
     document.body.className = shouldBeDark ? "bg-dark text-white" : "bg-light text-dark";
   }, [theme]);
 
-  // Chat management
   const upsertChat = (newChat) => {
     setChats((prev) => {
       const found = prev.find((c) => c.id === newChat.id);
@@ -316,13 +373,23 @@ export default function ChatApp({ user, onLogout }) {
       className={`d-flex ${darkMode ? "bg-dark text-white" : "bg-light text-dark"}`}
       style={{ height: "100vh", overflow: "hidden", backgroundColor: "#C9D6DF" }}
     >
+      {showHelp && (
+  <HelpModal
+    isOpen={showHelp}
+    onClose={closeHelp}
+    darkMode={darkMode}
+  />
+)}
       {showUpgradePlan ? (
         <UpgradePlan
           darkMode={darkMode}
-          onClose={() => setShowUpgradePlan(false)}
+          isOpen={showUpgradePlan}
+          
+          onClose={closeUpgradePlan}
           onUpgradeSuccess={() => {
             setShowUpgradePlan(false);
             setCurrentPlan("Pro");
+            window.history.pushState(null, "", "/");
           }}
         />
       ) : (
@@ -337,11 +404,12 @@ export default function ChatApp({ user, onLogout }) {
             currentUser={currentUser}
             onSelectChat={handleSelectChat}
             activeChatId={activeChatId}
-            onSettings={() => setShowSettings(true)}
+            onSettings={openSettings}  
+            onShowHelp={openHelp}
             onRename={handleRenameChat}
             onDelete={handleDeleteChat}
             onArchive={handleArchiveChat}
-            onShowUpgradePlan={() => setShowUpgradePlan(true)}
+            onShowUpgradePlan={openUpgradePlan}
             currentPlan={currentPlan}
           />
           <ChatArea
@@ -363,7 +431,7 @@ export default function ChatApp({ user, onLogout }) {
             onRestoreChat={handleRestoreChat}
             onPermanentlyDeleteChat={handleDeleteChat}
             isOpen={showSettings}
-            onClose={() => setShowSettings(false)}
+            onClose={closeSettings} 
             theme={theme}
             setTheme={(t) => setTheme(t)}
           />

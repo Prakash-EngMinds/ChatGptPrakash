@@ -264,7 +264,7 @@ const UpgradePlan = ({ darkMode, onClose, onUpgradeSuccess }) => {
                           <input
                             type="text"
                             className="form-control"
-                            placeholder="John Doe"
+                            placeholder="Enter Card Holder Name"
                             name="name"
                             value={cardData.name}
                             onChange={handleInputChange}

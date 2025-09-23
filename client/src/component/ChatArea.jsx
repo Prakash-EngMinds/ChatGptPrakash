@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { motion } from "framer-motion";
 import {
   Send,
@@ -30,6 +32,7 @@ export default function ChatArea({
   chatTitle,
   onNewChat
 }) {
+  const navigate = useNavigate();
   const [copiedStates, setCopiedStates] = useState({});
   const [likedStates, setLikedStates] = useState({});
   const [dislikedStates, setDislikedStates] = useState({});
@@ -183,9 +186,13 @@ useEffect(() => {
           {sidebarCollapsed && (
             <>
               <img
-              onClick={onNewChat}
+              onClick={() => {
+            onNewChat();        // your existing reset function
+            navigate("/chat");  // ✅ reset URL to /chat
+          }}
+              
                 src={gptIcon}
-                alt="ChatClone Logo"
+                alt="QuantumChat Logo"
                 style={{ width: "24px", height: "24px",cursor: 'pointer' }}
               />
               <h2
@@ -279,7 +286,7 @@ useEffect(() => {
                     }
                   }
                 }}
-                placeholder="Type your message..."
+                placeholder="Ask Me anything..."
                 disabled={isLoading}
                 className={`form-control rounded-3 ${darkMode ? "bg-dark text-white border-secondary" : ""
                   }`}
@@ -521,7 +528,7 @@ useEffect(() => {
                       }
                     }
                   }}
-                  placeholder="Type your message..."
+                  placeholder="Ask Me anything..."
                   disabled={isLoading}
                   className={`form-control rounded-3 ${darkMode ? "bg-dark text-white border-secondary" : ""
                     }`}

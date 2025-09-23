@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from "react-router-dom";
 import ChatApp from './ChatApp';
 import AuthForm from './component/AuthForm';
 
@@ -22,7 +23,6 @@ function App() {
     setLoggedIn(true);
     localStorage.setItem(USER_KEY, JSON.stringify(user));
 
-    // Set theme based on user prefs or system
     const userTheme = user.preferences?.theme || 'system';
     const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     setDarkMode(userTheme === 'dark' || (userTheme === 'system' && systemPrefersDark));
@@ -44,13 +44,31 @@ function App() {
   }, [darkMode]);
 
   return (
-    <>
-      {loggedIn ? (
-        <ChatApp user={currentUser} onLogout={handleLogout} />
-      ) : (
-        <AuthForm onLogin={handleLogin} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
-      )}
-    </>
+    <Routes>
+      <Route path="/" element={<Navigate to={loggedIn ? "/chat" : "/login"} />} />
+
+      <Route
+        path="/login"
+        element={
+          loggedIn ? (
+            <Navigate to="/chat" />
+          ) : (
+            <AuthForm onLogin={handleLogin} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />
+          )
+        }
+      />
+
+      <Route
+        path="/chat"
+        element={
+          loggedIn ? (
+            <ChatApp user={currentUser} onLogout={handleLogout} />
+          ) : (
+            <Navigate to="/login" />
+          )
+        }
+      />
+    </Routes>
   );
 }
 
