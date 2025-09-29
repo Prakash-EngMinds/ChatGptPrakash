@@ -20,7 +20,7 @@ export default function ForgotPasswordModal({ darkMode, onClose }) {
     }
     setIsLoading(true);
  
-    const users = JSON.parse(localStorage.getItem('chatapp_users')) || [];
+    const users = JSON.parse(localStorage.getItem('chatappcurrentuser')) || [];
     const foundUser = users.find(user => user.email === email);
     console.log('Searching for user with email:', email);
     console.log('Users in storage:', users);

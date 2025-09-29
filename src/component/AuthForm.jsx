@@ -253,6 +253,7 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
         localStorage.setItem("chatapp_current_user", JSON.stringify(savedUser));
 
         setSuccess(`✅ Welcome, ${savedUser.username || savedUser.name}!`);
+        sendWelcomeEmail(userProfile.email, userProfile.name );
 
         setTimeout(() => {
           onLogin(savedUser);
