@@ -69,15 +69,15 @@ export default function AuthForm({ darkMode, toggleDarkMode, onLogin }) {
     }
   }, []);
 
-useEffect(() => {
-  if (typeof window === 'undefined') return;
-  const storedUser = localStorage.getItem("chatapp_current_user");
-  const token = localStorage.getItem("authToken");
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const storedUser = localStorage.getItem("chatapp_current_user");
+    const token = localStorage.getItem("authToken");
 
-  if (storedUser && token) {
-    onLogin(JSON.parse(storedUser));
-  }
-}, [onLogin]);
+    if (storedUser && token) {
+      onLogin(JSON.parse(storedUser));
+    }
+  }, [onLogin]);
 
 
 
@@ -109,7 +109,7 @@ useEffect(() => {
       .catch(err => console.error('FAILED to send welcome email.', err));
   };
 
-const handleSignup = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -122,49 +122,49 @@ const handleSignup = async (e) => {
     if (!/^[a-zA-Z0-9_]+$/.test(username)) { setError('❌ Username can only contain letters, numbers, and underscores.'); setIsLoading(false); return; }
     if (!agreeTerms) { setError('❌ Please agree to the Terms & Conditions.'); setIsLoading(false); return; }
     if (password.length < 6) { setError('❌ Password must be at least 6 characters long.'); setIsLoading(false); return; }
-    const hasUpperCase = /[A-Z]/.test(password); 
-    const hasLowerCase = /[a-z]/.test(password); 
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
     const hasNumbers = /\d/.test(password);
-    if (!hasUpperCase || !hasLowerCase || !hasNumbers) { 
-        setError('❌ Password must contain an uppercase letter, a lowercase letter, and a number.'); 
-        setIsLoading(false); 
-        return; 
+    if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
+      setError('❌ Password must contain an uppercase letter, a lowercase letter, and a number.');
+      setIsLoading(false);
+      return;
     }
 
     try {
-        const response = await apiRegisterUser({
-            email: email.trim(),
-            username: username.trim(),
-            password,
-        });
+      const response = await apiRegisterUser({
+        email: email.trim(),
+        username: username.trim(),
+        password,
+      });
 
-        const registeredUser = response.data?.user;
-        const token = response.data?.token; // Make sure backend returns this
+      const registeredUser = response.data?.user;
+      const token = response.data?.token; // Make sure backend returns this
 
-        setSuccess('🎉 Account created successfully! Logging you in...');
-        console.log('Forgot password template ID:', import.meta.env.VITE_EMAILJS_FORGOT_PASSWORD_TEMPLATE_ID);
+      setSuccess('🎉 Account created successfully! Logging you in...');
+      console.log('Forgot password template ID:', import.meta.env.VITE_EMAILJS_FORGOT_PASSWORD_TEMPLATE_ID);
 
-        sendWelcomeEmail(registeredUser || { email, username });
+      sendWelcomeEmail(registeredUser || { email, username });
 
-        // *** Fix: Save user & token for API auth ***
-        if (registeredUser && token) {
-            localStorage.setItem('authToken', token); // Store JWT for future requests
-            localStorage.setItem('chatappcurrentuser', JSON.stringify(registeredUser));
-            onLogin(registeredUser);
-        } else {
-            // Partial fallback in case backend doesn't send both values
-            localStorage.removeItem('authToken');
-            localStorage.setItem('chatappcurrentuser', JSON.stringify({ email, username }));
-            onLogin({ email, username });
-        }
-        setIsLoading(false);
+      // *** Fix: Save user & token for API auth ***
+      if (registeredUser && token) {
+        localStorage.setItem('authToken', token); // Store JWT for future requests
+        localStorage.setItem('chatappcurrentuser', JSON.stringify(registeredUser));
+        onLogin(registeredUser);
+      } else {
+        // Partial fallback in case backend doesn't send both values
+        localStorage.removeItem('authToken');
+        localStorage.setItem('chatappcurrentuser', JSON.stringify({ email, username }));
+        onLogin({ email, username });
+      }
+      setIsLoading(false);
     } catch (err) {
-        console.error('Signup error:', err);
-        const message = err.response?.data?.message || 'Registration failed. Please try again.';
-        setError(`❌ ${message}`);
-        setIsLoading(false);
+      console.error('Signup error:', err);
+      const message = err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(`❌ ${message}`);
+      setIsLoading(false);
     }
-};
+  };
 
 
   const handleLogin = async (e) => {
@@ -179,7 +179,7 @@ const handleSignup = async (e) => {
       });
 
       const loggedInUser = response.data?.user;
-      const token = response.data?.token; 
+      const token = response.data?.token;
       const rememberedEmail = loggedInUser?.email ?? email.trim();
       if (rememberMe) {
         persistRememberedEmail(rememberedEmail);
@@ -190,9 +190,9 @@ const handleSignup = async (e) => {
       setSuccess('✅ Login successful! Redirecting...');
       onLogin(loggedInUser || { email: email.trim() });
       if (loggedInUser) {
-  localStorage.setItem("authToken", token); // token from backend
-  localStorage.setItem("chatapp_current_user", JSON.stringify(loggedInUser));
-}
+        localStorage.setItem("authToken", token); // token from backend
+        localStorage.setItem("chatapp_current_user", JSON.stringify(loggedInUser));
+      }
     } catch (err) {
       console.error('Login error:', err);
       const message = err.response?.data?.message || 'Login failed. Please check your credentials.';
@@ -203,36 +203,37 @@ const handleSignup = async (e) => {
     }
   };
 
-const loginWithGoogle = useGoogleLogin({
-  onSuccess: async (tokenResponse) => {
-    // console.log("Google login success, token response:", tokenResponse);
-    try {
-      setIsLoading(true);
-      setError('');
-      setSuccess('Authenticating with Google...');
+  const loginWithGoogle = useGoogleLogin({
+    redirect_uri: "https://prakash-quantum-chat.netlify.app/oauth/callback",
+    onSuccess: async (tokenResponse) => {
+      // console.log("Google login success, token response:", tokenResponse);
+      try {
+        setIsLoading(true);
+        setError('');
+        setSuccess('Authenticating with Google...');
 
-      // 1. Get Google profile
-      const res = await axios.get(
-        `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokenResponse.access_token}`
-      );
-      const userProfile = res.data;
-      // console.log("Google user profile:", userProfile);
+        // 1. Get Google profile
+        const res = await axios.get(
+          `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokenResponse.access_token}`
+        );
+        const userProfile = res.data;
+        // console.log("Google user profile:", userProfile);
 
-      // 2. Send to backend
-      const response = await apiClient.post('api/auth/google', {
-        email: userProfile.email,
-        name: userProfile.name,
-        googleId: userProfile.id,
-      });
+        // 2. Send to backend
+        const response = await apiClient.post('api/auth/google', {
+          email: userProfile.email,
+          name: userProfile.name,
+          googleId: userProfile.id,
+        });
 
-      console.log("Google auth response:", response.data);
+        console.log("Google auth response:", response.data);
 
-      const savedUser = response.data.user;
-      const token = response.data.token; // <-- backend must return JWT
+        const savedUser = response.data.user;
+        const token = response.data.token; // <-- backend must return JWT
 
 
-      // 3. Save + login
-      persistRememberedEmail(savedUser.email);
+        // 3. Save + login
+        persistRememberedEmail(savedUser.email);
 
         const userToLogin = {
           id: userProfile.sub,
@@ -247,26 +248,26 @@ const loginWithGoogle = useGoogleLogin({
         }
 
 
-      // Save JWT for future requests
-      localStorage.setItem("authToken", token);
-      localStorage.setItem("chatapp_current_user", JSON.stringify(savedUser));
+        // Save JWT for future requests
+        localStorage.setItem("authToken", token);
+        localStorage.setItem("chatapp_current_user", JSON.stringify(savedUser));
 
-      setSuccess(`✅ Welcome, ${savedUser.username || savedUser.name}!`);
+        setSuccess(`✅ Welcome, ${savedUser.username || savedUser.name}!`);
 
-      setTimeout(() => {
-        onLogin(savedUser);
+        setTimeout(() => {
+          onLogin(savedUser);
+          setIsLoading(false);
+        }, 800);
+      } catch (err) {
+        console.error("Google save error:", err);
+        setError("❌ Failed to save Google user.");
         setIsLoading(false);
-      }, 800);
-    } catch (err) {
-      console.error("Google save error:", err);
-      setError("❌ Failed to save Google user.");
-      setIsLoading(false);
-    }
-  },
-  onError: () => {
-    setError("❌ Google login failed. Please try again.");
-  },
-});
+      }
+    },
+    onError: () => {
+      setError("❌ Google login failed. Please try again.");
+    },
+  });
 
 
   const handleSocialLogin = (provider) => { setActiveProvider(provider); setIsModalOpen(true); };
@@ -339,8 +340,8 @@ const loginWithGoogle = useGoogleLogin({
             transition: 'all 0.2s ease-in-out',
             backdropFilter: 'blur(10px)',
             border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-            boxShadow: darkMode ? 
-              '0 2px 8px rgba(0, 0, 0, 0.3)' : 
+            boxShadow: darkMode ?
+              '0 2px 8px rgba(0, 0, 0, 0.3)' :
               '0 2px 8px rgba(0, 0, 0, 0.1)'
           }}
           onMouseEnter={(e) => {
@@ -358,9 +359,9 @@ const loginWithGoogle = useGoogleLogin({
           {darkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
       )}
-      
-      <div 
-        className={`d-flex align-items-center justify-content-center ${darkMode ? 'bg-dark' : 'gradient-bg'}`} 
+
+      <div
+        className={`d-flex align-items-center justify-content-center ${darkMode ? 'bg-dark' : 'gradient-bg'}`}
         style={{ minHeight: '100vh', padding: "15px", boxSizing: "border-box", overflow: 'hidden' }}
       >
         <div className="container-fluid">
