@@ -204,6 +204,7 @@ const handleSignup = async (e) => {
   };
 
 const loginWithGoogle = useGoogleLogin({
+  redirect_uri: "https://quantumchat-prakash.netlify.app/oauth/callback",
   onSuccess: async (tokenResponse) => {
     // console.log("Google login success, token response:", tokenResponse);
     try {
